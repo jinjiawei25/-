@@ -1,0 +1,3228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>时间旅行者</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: #1a120b;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            padding: 16px;
+        }
+        .game-container {
+            width: 100%;
+            max-width: 750px;
+            background: #d9b382;
+            background-image: radial-gradient(circle, #c9a062 5%, #b38b54 95%);
+            border-radius: 32px;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.6), inset 0 1px 5px #f3d9b1;
+            padding: 20px;
+            border: 8px solid #7a5a3a;
+        }
+        .knowledge-bar {
+            background: #2e241b;
+            color: #ffd966;
+            padding: 8px 20px;
+            border-radius: 40px;
+            display: inline-block;
+            font-weight: bold;
+            font-size: 1.1rem;
+            border: 2px solid #b98f5f;
+            box-shadow: inset 0 -2px 0 #4a3727;
+            margin-bottom: 20px;
+        }
+        .knowledge-bar span {
+            color: #ffe484;
+            font-size: 1.3rem;
+            margin-left: 8px;
+        }
+        .dialogue-panel {
+            background: #0d0a07;
+            border: 4px solid #ba9f7b;
+            border-radius: 30px 30px 20px 20px;
+            padding: 40px 20px 20px;
+            box-shadow: inset 0 0 15px #4a3a2a, 0 8px 0 #4f3a27;
+            position: relative;
+            margin-bottom: 30px;
+            min-height: 200px;
+            transition: padding 0.2s;
+        }
+        .dialogue-panel.start-page-panel, .dialogue-panel.chapter-select-panel {
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .speaker-name {
+            position: absolute;
+            top: -15px;
+            left: 30px;
+            background: #c5a059;
+            color: #221a12;
+            font-weight: bold;
+            font-size: 1.2rem;
+            padding: 5px 20px;
+            border-radius: 40px;
+            border: 2px solid #ebc17e;
+            box-shadow: 0 4px 0 #7b623a;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .dialogue-text {
+            color: #f7eed9;
+            font-size: 1.25rem;
+            line-height: 1.6;
+            min-height: 120px;
+            font-family: 'Courier New', monospace;
+            text-shadow: 2px 2px 0 #2a1f15;
+            white-space: pre-wrap;
+            text-indent: 2em;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .start-page-image, .chapter-select-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 30px 30px 0 0;
+            display: block;
+        }
+        .options-area {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .option-btn {
+            background: #edd6b0;
+            border: 3px solid #a3784b;
+            color: #2f2a1f;
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 14px 20px;
+            border-radius: 60px;
+            text-align: left;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #7b5a3b, 0 8px 10px rgba(0,0,0,0.3);
+            transition: all 0.08s linear;
+            font-family: inherit;
+        }
+        .option-btn:hover {
+            background: #f8e9cf;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #7b5a3b, 0 10px 14px rgba(0,0,0,0.3);
+        }
+        .option-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #7b5a3b, 0 5px 8px rgba(0,0,0,0.3);
+        }
+        .option-btn:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            transform: translateY(4px);
+        }
+        .next-btn {
+            background: #bb8f63;
+            border: 2px solid #e9c590;
+            color: #1d150e;
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 12px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #6d4d31;
+            transition: 0.06s linear;
+            display: inline-block;
+            margin-top: 15px;
+            border: none;
+            width: fit-content;
+        }
+        .next-btn:hover {
+            background: #dab085;
+            transform: translateY(-2px);
+            box-shadow: 0 7px 0 #6d4d31;
+        }
+        .next-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #6d4d31;
+        }
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            color: #412e1d;
+            font-weight: bold;
+        }
+        .shop-item {
+            background: #5e4a34;
+            color: #ffe3b0;
+            padding: 10px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .price-options {
+            display: flex;
+            gap: 20px;
+            margin-top: 5px;
+            flex-wrap: wrap;
+        }
+        .price-options label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #8b6f4c;
+            padding: 8px 15px;
+            border-radius: 30px;
+            color: #1a130a;
+            font-weight: normal;
+        }
+        .submit-shop {
+            background: #4caf50;
+            border: none;
+            color: white;
+            padding: 12px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        .error-message {
+            color: #ffb3b3;
+            background: #8b0000;
+            padding: 10px;
+            border-radius: 20px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .start-title {
+            font-size: 3rem;
+            color: #ffd966;
+            text-align: center;
+            margin: 30px 0 40px;
+            text-shadow: 4px 4px 0 #7a5a3a;
+            letter-spacing: 4px;
+        }
+        .start-btn {
+            background: #edd6b0;
+            border: 4px solid #a3784b;
+            color: #2f2a1f;
+            font-size: 2rem;
+            font-weight: bold;
+            padding: 20px 40px;
+            border-radius: 80px;
+            cursor: pointer;
+            box-shadow: 0 10px 0 #7b5a3b, 0 12px 20px rgba(0,0,0,0.4);
+            transition: all 0.08s linear;
+            font-family: inherit;
+            width: fit-content;
+            margin: 20px auto;
+        }
+        .start-btn:hover {
+            background: #f8e9cf;
+            transform: translateY(-4px);
+            box-shadow: 0 14px 0 #7b5a3b, 0 16px 24px rgba(0,0,0,0.4);
+        }
+        .start-btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 4px 0 #7b5a3b, 0 8px 16px rgba(0,0,0,0.4);
+        }
+        .scene-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 20px;
+            margin-top: 15px;
+            background-color: #5e4a34;
+        }
+        .chapter-btn {
+            background: #edd6b0;
+            border: 3px solid #a3784b;
+            color: #2f2a1f;
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 15px 25px;
+            border-radius: 60px;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #7b5a3b, 0 8px 10px rgba(0,0,0,0.3);
+            transition: all 0.08s linear;
+            font-family: inherit;
+            width: 100%;
+            margin: 10px 0;
+        }
+        .chapter-btn:hover {
+            background: #f8e9cf;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #7b5a3b, 0 10px 14px rgba(0,0,0,0.3);
+        }
+        .chapter-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #7b5a3b, 0 5px 8px rgba(0,0,0,0.3);
+        }
+        .back-btn {
+            background: #bb8f63;
+            border: 2px solid #e9c590;
+            color: #1d150e;
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 12px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #6d4d31;
+            transition: 0.06s linear;
+            display: inline-block;
+            margin-top: 20px;
+            border: none;
+            width: fit-content;
+        }
+        .back-btn:hover {
+            background: #dab085;
+            transform: translateY(-2px);
+            box-shadow: 0 7px 0 #6d4d31;
+        }
+        .back-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #6d4d31;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="knowledge-bar" id="knowledgeBar">
+            📜 知识碎片 <span id="knowledgeDisplay">0</span>
+        </div>
+        <div class="dialogue-panel" id="dialoguePanel">
+            <div class="speaker-name" id="speakerName">???</div>
+            <div class="dialogue-text" id="dialogueText"></div>
+        </div>
+        <div id="interactionArea" class="options-area"></div>
+        <div class="footer">
+            <div id="footerLeft">⏳ <span id="chapterDisplay">开始 · 时间旅行者</span></div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // 游戏状态（增加了第五章进度）
+            let state = {
+                currentSceneKey: 'start_page',
+                knowledgePoints: 0,
+                hieroglyphProgress: 0,
+                quizProgress: 0,
+                godsProgress: 0,
+                debateProgress: 0,
+                olympicProgress: 0,
+                aqueductProgress: 0,
+                senateProgress: 0,
+                villageProgress: 0,
+                monasteryProgress: 0,
+                cathedralProgress: 0,
+                universityProgress: 0,
+                tournamentProgress: 0,
+                vitruvianProgress: 0,
+                libraryProgress: 0,
+                monaLisaProgress: 0,
+                opticsProgress: 0,
+                navigationProgress: 0,
+                // 第五章进度
+                timelineProgress: 0,
+                modernQuizProgress: 0,
+                exhibitionProgress: 0,
+                typing: false,
+                typingInterval: null,
+                currentFullText: '',
+                currentSpeaker: '',
+                lastError: null,
+                skipTyping: false,
+            };
+
+            // 场景数据库（完整包含第一章至第五章）
+            const scenes = {
+                // ========== 开始页面 ==========
+                start_page: { speaker: '', text: '', options: [] },
+
+                // ========== 章节选择页面 ==========
+                chapter_select: { speaker: '', text: '', options: [] },
+
+                // ========== 第一章：古埃及篇 ==========
+                library_discovery: {
+                    speaker: '📖 叙述者',
+                    text: "那天放学后，你独自来到学校图书馆，准备为历史测验找些参考资料。翻找中，你在架子后面看到一扇半掩的门，门上钉着木牌：\"非工作人员禁止进入\"。",
+                    options: []
+                },
+                library_enter: {
+                    speaker: '📖 叙述者',
+                    text: "一股莫名的吸引力驱使你推门而入……鼻尖扑来的是陈旧纸张和金属混合的味道。房间里光线昏暗，堆满厚重的书箱和褪色的地球仪。墙边摆着一台奇特的老式装置。",
+                    options: [
+                        { label: '📖 查看书架上的古籍', next: 'library_books' },
+                        { label: '🔍 查看奇特装置', next: 'library_machine' },
+                        { label: '⚡ 触碰装置', next: 'chronos_intro_egypt' }
+                    ]
+                },
+                library_books: {
+                    speaker: '📖 叙述者',
+                    text: "你翻开一本泛黄的笔记本，上面记录着一位学者对时间旅行可能性的研究。书中提到：“通过特定频率的振动和古代符号，或许能打开时空裂缝。”另一页画着与墙边装置相似的草图，标注着“能源核心需嵌入古籍，手稿或为关键”。",
+                    options: [{ label: '返回房间', next: 'library_enter', skipTyping: true }]
+                },
+                library_machine: {
+                    speaker: '📖 叙述者',
+                    text: "你凑近那台奇特的老式装置——高约两米、弧形结构，上面布满铜线和转轮，中央嵌着一本封闭的书籍，封皮写着：《时间之神手稿》。",
+                    options: [{ label: '返回房间', next: 'library_enter', skipTyping: true }]
+                },
+                chronos_intro_egypt: {
+                    speaker: '⏳ 时间之神',
+                    text: "出于好奇，你将手放在那台机器的控制台上，想擦去灰尘……就在你触碰到中心的某个凹槽时，机器\"咔哒\"一声启动，指针飞转，屏幕闪烁，室内灯光骤然一灭。一股不可抗拒的力量将你牢牢吸住——空气如水般扭曲，书页从箱子里飞起，围绕你旋转，墙上的年代表开始变形、重构。你拼命想挣脱，但视线开始模糊，身体仿佛被抽离……",
+                    next: 'egypt_arrival'
+                },
+                egypt_arrival: {
+                    speaker: '⏳ 时间之神',
+                    text: "你缓缓睁开眼，阳光刺眼，脚下是滚烫的沙，远处是巍峨的金字塔和尼罗河绿洲。",
+                    next: 'chronos_dialogue_egypt'
+                },
+                chronos_dialogue_egypt: {
+                    speaker: '⏳ 时间之神',
+                    text: "一个银白色球体在空中浮现，淡光环绕，声音机械而沉稳。\"定位完成。当前时间坐标：公元前 1270 年，埃及第十九王朝。欢迎你，时间旅者。我是时间之神，你的历史指引者。\"",
+                    options: [
+                        { label: '“你是什么……外星机器人？”', next: 'chronos_response2' }
+                    ]
+                },
+                chronos_response1: {
+                    speaker: '⏳ 时间之神',
+                    text: "“我不是生命体，也非机械物种。我是时间之神，‘时间之环’的中枢智能系统。你可以理解为一个连接历史、记忆与未来的意识代理者。”",
+                    options: [
+                        { label: '“你知道我是谁？”', next: 'chronos_q2_1' },
+                        { label: '“我只是个普通学生……”', next: 'chronos_q2_2' },
+                        { label: '“你选中我，是不是搞错人了？”', next: 'chronos_q2_3' }
+                    ]
+                },
+                chronos_response2: {
+                    speaker: '⏳ 时间之神',
+                    text: "“我不是生命体，也非机械物种。我是时间之神，‘时间之环’的中枢智能系统。你可以理解为一个连接历史、记忆与未来的意识代理者。”",
+                    options: [
+                        { label: '“你知道我是谁？”', next: 'chronos_q2_1' },
+                        { label: '“我只是个普通学生……”', next: 'chronos_q2_2' },
+                        { label: '“你选中我，是不是搞错人了？”', next: 'chronos_q2_3' }
+                    ]
+                },
+                chronos_response3: {
+                    speaker: '⏳ 时间之神',
+                    text: "“你激活了时间装置，触发了古代卷轴中封存的旅者协议。你的身份并不重要，关键在于你的学习能力、判断力与历史理解。在错误即将重复，真相即将湮灭之际，你成为了‘旅者’。”",
+                    options: [
+                        { label: '“我该怎么做？”', next: 'chronos_q3_1' },
+                        { label: '“你能送我回去吗？”', next: 'chronos_q3_2' },
+                        { label: '“我没有准备好……我需要指南。”', next: 'chronos_q3_3' }
+                    ]
+                },
+                chronos_q2_1: {
+                    speaker: '⏳ 时间之神',
+                    text: "“你激活了时间装置，触发了古代卷轴中封存的旅者协议。你的身份并不重要，关键在于你的学习能力、判断力与历史理解。在错误即将重复，真相即将湮灭之际，你成为了‘旅者’。”",
+                    options: [
+                        { label: '“我该怎么做？”', next: 'chronos_q3_1' },
+                        { label: '“你能送我回去吗？”', next: 'chronos_q3_2' },
+                        { label: '“我没有准备好……我需要指南。”', next: 'chronos_q3_3' }
+                    ]
+                },
+                chronos_q2_2: {
+                    speaker: '⏳ 时间之神',
+                    text: "“你激活了时间装置，触发了古代卷轴中封存的旅者协议。你的身份并不重要，关键在于你的学习能力、判断力与历史理解。在错误即将重复，真相即将湮灭之际，你成为了‘旅者’。”",
+                    options: [
+                        { label: '“我该怎么做？”', next: 'chronos_q3_1' },
+                        { label: '“你能送我回去吗？”', next: 'chronos_q3_2' },
+                        { label: '“我没有准备好……我需要指南。”', next: 'chronos_q3_3' }
+                    ]
+                },
+                chronos_q2_3: {
+                    speaker: '⏳ 时间之神',
+                    text: "“你激活了时间装置，触发了古代卷轴中封存的旅者协议。你的身份并不重要，关键在于你的学习能力、判断力与历史理解。在错误即将重复，真相即将湮灭之际，你成为了‘旅者’。”",
+                    options: [
+                        { label: '“我该怎么做？”', next: 'chronos_q3_1' },
+                        { label: '“你能送我回去吗？”', next: 'chronos_q3_2' },
+                        { label: '“我没有准备好……我需要指南。”', next: 'chronos_q3_3' }
+                    ]
+                },
+                chronos_q3_1: {
+                    speaker: '⏳ 时间之神',
+                    text: "“你将穿越多个文明节点，重构被遗忘或扭曲的历史。当你完成全部任务并构建完整‘时间图谱’，你将有资格重返你的时代。我将陪伴你，提供指引、记录知识、辅助任务。”",
+                    next: 'chronos_explain'
+                },
+                chronos_q3_2: {
+                    speaker: '⏳ 时间之神',
+                    text: "“当你完成全部任务并构建完整‘时间图谱’，你将有资格重返你的时代。在此之前，你必须完成当前节点的任务。”",
+                    next: 'chronos_explain'
+                },
+                chronos_q3_3: {
+                    speaker: '⏳ 时间之神',
+                    text: "“我将陪伴你，提供指引、记录知识、辅助任务。你只需跟随指引，一步步探索。”",
+                    next: 'chronos_explain'
+                },
+                chronos_explain: {
+                    speaker: '⏳ 时间之神',
+                    text: "“你将以观察者与协助者的身份，参与历史关键事件。当前任务：前往神庙，与关键人物接触，协助他们解开真相。记住，你不能直接改变历史，但可以引导历史按照其原本轨迹发展。”",
+                    next: 'desert_path'
+                },
+                desert_path: {
+                    speaker: '📖 叙述者',
+                    text: "你沿着尼罗河岸前行，看到几个农民正在灌溉田地。他们好奇地打量着你，但并未上前。前方不远处的村庄传来牲畜叫声和孩童嬉闹声。",
+                    options: [
+                        { label: '在村庄稍作停留', next: 'village_scene' }
+                    ]
+                },
+                village_scene: {
+                    speaker: '👨‍🌾 老农夫',
+                    text: "一位老农夫招呼你：“远方的客人，喝碗水吧。最近神庙不太平，祭司大人禁止外人靠近，你要小心。”",
+                    options: [
+                        { label: '感谢并询问更多', next: 'village_more' }
+                    ]
+                },
+                village_more: {
+                    speaker: '👨‍🌾 老农夫',
+                    text: "老农夫压低声音：“听说圣甲虫宝石失窃了，那宝石可是法老赐予神庙的圣物。守卫抓了市集的书记官，但我觉得他冤枉……唉，世道乱了。”",
+                    options: [{ label: '前往神庙', next: 'meet_rahti' }]
+                },
+                meet_rahti: {
+                    speaker: '🧑 拉赫提（祭司学徒）',
+                    text: "一个手持木杖的青年匆忙跑来：“停下！你是……哪来的？你不是这里的人。”",
+                    options: [
+                        { label: '“我是旅行者，想找神庙。”', next: 'rahti_response1' },
+                        { label: '“我听说神庙出了事，想帮忙。”', next: 'rahti_response2' },
+                        { label: '“我……不知道怎么来到这里的。”', next: 'rahti_response3' }
+                    ]
+                },
+                rahti_response1: {
+                    speaker: '🧑 拉赫提',
+                    text: "“这也许是神的安排。神庙确实需要帮助——跟我来吧。”",
+                    next: 'temple_door'
+                },
+                rahti_response2: {
+                    speaker: '🧑 拉赫提',
+                    text: "“你听说了？你是神的使者吗？来吧，神庙正需要你这样的外人。”",
+                    next: 'temple_door'
+                },
+                rahti_response3: {
+                    speaker: '🧑 拉赫提',
+                    text: "“你太可疑了……但眼下无计可施，就让你试试吧。跟我来。”",
+                    next: 'temple_door'
+                },
+                temple_door: {
+                    speaker: '🧑 拉赫提',
+                    text: "拉赫提带你来到神庙深处的密室门前，门上刻满象形文字。“这扇门被神文封印，连祭司也无法解开。你若真是神的使者，就来试试吧。”",
+                    next: 'hieroglyph_start'
+                },
+                hieroglyph_start: {
+                    speaker: '⏳ 时间之神',
+                    text: "古埃及历史知识测试：你需要正确回答5道问题，全部答对即可开门。",
+                    next: 'hieroglyph_q1'
+                },
+                hieroglyph_q1: {
+                    speaker: '🔤 第一题',
+                    text: "古埃及的统一约发生在何时？",
+                    options: [
+                        { label: 'A. 公元前3100年左右', isCorrect: true, explanation: '正确！约公元前3100年，美尼斯统一上下埃及，建立第一王朝。' },
+                        { label: 'B. 公元前2600年', isCorrect: false, explanation: '不对。公元前2600年左右是古王国时期，金字塔时代。' },
+                        { label: 'C. 公元前2000年', isCorrect: false, explanation: '不对。公元前2000年左右是中王国时期。' },
+                        { label: 'D. 公元前1500年', isCorrect: false, explanation: '不对。公元前1500年左右是新王国时期。' }
+                    ]
+                },
+                hieroglyph_q2: {
+                    speaker: '🔤 第二题',
+                    text: "哪位法老建造了最大的金字塔？",
+                    options: [
+                        { label: 'A. 图坦卡蒙', isCorrect: false, explanation: '不对。图坦卡蒙的陵墓虽著名，但金字塔很小。' },
+                        { label: 'B. 胡夫', isCorrect: true, explanation: '正确！胡夫金字塔是吉萨三大金字塔中最大的，原高146.6米。' },
+                        { label: 'C. 拉美西斯二世', isCorrect: false, explanation: '不对。拉美西斯二世主要建造神庙，如阿布辛贝神庙。' },
+                        { label: 'D. 哈特谢普苏特', isCorrect: false, explanation: '不对。哈特谢普苏特建造了著名的葬祭庙，而非大金字塔。' }
+                    ]
+                },
+                hieroglyph_q3: {
+                    speaker: '🔤 第三题',
+                    text: "古埃及的主要书写材料是什么？",
+                    options: [
+                        { label: 'A. 纸莎草纸', isCorrect: true, explanation: '正确！古埃及人用纸莎草茎制作纸莎草纸，是重要的书写材料。' },
+                        { label: 'B. 羊皮纸', isCorrect: false, explanation: '不对。羊皮纸主要流行于古希腊罗马时期。' },
+                        { label: 'C. 竹简', isCorrect: false, explanation: '不对。竹简是中国古代书写材料。' },
+                        { label: 'D. 泥板', isCorrect: false, explanation: '不对。泥板是两河流域的书写材料。' }
+                    ]
+                },
+                hieroglyph_q4: {
+                    speaker: '🔤 第四题',
+                    text: "古埃及宗教中最重要的神是？",
+                    options: [
+                        { label: 'A. 奥西里斯', isCorrect: false, explanation: '不对。奥西里斯是冥界之神，重要但非最高。' },
+                        { label: 'B. 伊西斯', isCorrect: false, explanation: '不对。伊西斯是魔法与母性女神。' },
+                        { label: 'C. 拉', isCorrect: true, explanation: '正确！拉是太阳神，被视为众神之王，国家神。' },
+                        { label: 'D. 阿努比斯', isCorrect: false, explanation: '不对。阿努比斯是丧葬之神，负责木乃伊制作。' }
+                    ]
+                },
+                hieroglyph_q5: {
+                    speaker: '🔤 第五题',
+                    text: "古埃及象形文字大约有多少个符号？",
+                    options: [
+                        { label: 'A. 100多个', isCorrect: false, explanation: '不对。象形文字符号远多于100个。' },
+                        { label: 'B. 500多个', isCorrect: false, explanation: '接近，但实际更多，约700多个常用符号。' },
+                        { label: 'C. 700多个', isCorrect: true, explanation: '正确！古埃及象形文字共有700多个常用符号。' },
+                        { label: 'D. 1000多个', isCorrect: false, explanation: '不对，包括变体总数可能上千，但常用符号约700。' }
+                    ]
+                },
+                hieroglyph_explain1: { speaker: '⏳ 时间之神', text: '', next: 'hieroglyph_q2' },
+                hieroglyph_explain2: { speaker: '⏳ 时间之神', text: '', next: 'hieroglyph_q3' },
+                hieroglyph_explain3: { speaker: '⏳ 时间之神', text: '', next: 'hieroglyph_q4' },
+                hieroglyph_explain4: { speaker: '⏳ 时间之神', text: '', next: 'hieroglyph_q5' },
+                hieroglyph_explain5: { speaker: '⏳ 时间之神', text: '', next: 'hieroglyph_success' },
+                hieroglyph_success: {
+                    speaker: '🧑 拉赫提',
+                    text: "密室大门缓缓打开！你的智慧得到了神的认可。（获得知识碎片+5）",
+                    onEnter: () => { state.knowledgePoints += 5; },
+                    next: 'temple_inside'
+                },
+                temple_inside: {
+                    speaker: '📖 叙述者',
+                    text: "你走进密室，发现里面堆放着珍贵的祭祀用品和卷轴。墙上壁画描绘着法老向众神献祭的场景。",
+                    options: [
+                        { label: '检查墙上的壁画', next: 'temple_mural' }
+                    ]
+                },
+                temple_mural: {
+                    speaker: '📖 叙述者',
+                    text: "壁画上详细记录了木乃伊制作过程：取出内脏、用泡碱脱水、缠绕亚麻布。你注意到心脏位置被特别强调。",
+                    options: [{ label: '继续寻找宝石', next: 'clue_found' }]
+                },
+                clue_found: {
+                    speaker: '🧑 拉赫提',
+                    text: "你在一个暗格中发现一枚刻有蛇形纹章的徽章，看来与盗贼有关。",
+                    next: 'market_scene'
+                },
+                market_scene: {
+                    speaker: '📖 叙述者',
+                    text: "你走出神庙，来到热闹的市集寻找线索。集市上人群穿梭，吆喝声不绝，各家店铺里香料、亚麻、陶器和祭品琳琅满目。",
+                    next: 'market_meet'
+                },
+                market_meet: {
+                    speaker: '👩 纳芙蒂（女商人）',
+                    text: "一位年轻女子拦住你：“你就是那位神庙来的‘旅者’吗？我父亲是市集书记，昨天被抓进牢里，守卫说他是盗宝贼！我不信！我得到一枚徽章，上面是‘蛇形纹章’，可能与盗贼有关。你能帮我救出父亲吗？你需要买这几样东西：刻刀、火油、麻绳、护符。但是我只有15铜币，希望你能用不超过10铜币买到它们。”",
+                    next: 'shopping_game'
+                },
+                shopping_game: {
+                    speaker: '🛒 市集购物',
+                    text: "下面是三个摊位，每个物品在不同摊位价格不同。请为每件物品选择最便宜的购买方式（单选），总价≤10铜币即可过关。",
+                },
+                shopping_success: {
+                    speaker: '👩 纳芙蒂',
+                    text: "你精打细算，用不超过10铜币买齐了所有物品！父亲有救了！（获得知识碎片+2）",
+                    onEnter: () => { state.knowledgePoints += 2; },
+                    next: 'prison_release'
+                },
+                shopping_fail: {
+                    speaker: '👩 纳芙蒂',
+                    text: "这样买太贵了，我只有15铜币，还要留5铜币给狱卒……再试试吧。",
+                },
+                prison_release: {
+                    speaker: '👩 纳芙蒂',
+                    text: "你带着物品和徽章找到守卫，他用徽章对比后发现确实不匹配，释放了纳芙蒂的父亲。老人感激不尽，告诉你真正的盗贼可能藏身于金字塔。",
+                    next: 'pyramid_entrance'
+                },
+                pyramid_entrance: {
+                    speaker: '🛡️ 守卫',
+                    text: "你来到金字塔入口，两名持矛守卫拦住去路。“此地为王权圣域，非命令不得入内。”拉赫提上前：“他是旅者，应通过试炼。”守卫收起长矛：“那就回答三个问题，全对才可进入。”",
+                    next: 'quiz_q1'
+                },
+                quiz_q1: {
+                    speaker: '❓ 守卫第一问',
+                    text: "古埃及新王国时期最著名的对外扩张的法老是？",
+                    options: [
+                        { label: 'A. 胡夫', isCorrect: false, explanation: '不对。胡夫是古王国时期的法老，以建造金字塔闻名。' },
+                        { label: 'B. 图特摩斯三世', isCorrect: true, explanation: '正确！图特摩斯三世被称为“古埃及的拿破仑”，进行了多次远征，建立庞大帝国。' },
+                        { label: 'C. 阿肯那顿', isCorrect: false, explanation: '不对。阿肯那顿以宗教改革闻名，而非军事扩张。' },
+                        { label: 'D. 拉美西斯二世', isCorrect: false, explanation: '拉美西斯二世也进行过战争，但图特摩斯三世的扩张更显著。' }
+                    ]
+                },
+                quiz_q2: {
+                    speaker: '❓ 守卫第二问',
+                    text: "古埃及的《死亡之书》主要用于？",
+                    options: [
+                        { label: 'A. 记录法老功绩', isCorrect: false, explanation: '不对。法老功绩通常刻在神庙墙壁或方尖碑上。' },
+                        { label: 'B. 指导死者通过冥界审判', isCorrect: true, explanation: '正确！《死亡之书》包含咒语和祷文，帮助死者通过冥界审判。' },
+                        { label: 'C. 记载医学知识', isCorrect: false, explanation: '不对。医学知识记载在《埃伯斯纸草》等医学文献中。' },
+                        { label: 'D. 农业历法', isCorrect: false, explanation: '不对。农业历法与尼罗河泛滥相关，有专门记录。' }
+                    ]
+                },
+                quiz_q3: {
+                    speaker: '❓ 守卫第三问',
+                    text: "古埃及女性法老中最著名的是？",
+                    options: [
+                        { label: 'A. 纳芙蒂蒂', isCorrect: false, explanation: '不对。纳芙蒂蒂是阿肯那顿的妻子，影响力大但非独立法老。' },
+                        { label: 'B. 哈特谢普苏特', isCorrect: true, explanation: '正确！哈特谢普苏特是第十八王朝女法老，建造了著名的葬祭庙。' },
+                        { label: 'C. 克利奥帕特拉七世', isCorrect: false, explanation: '克利奥帕特拉是托勒密王朝末期，虽著名但非传统古埃及法老。' },
+                        { label: 'D. 妮菲塔莉', isCorrect: false, explanation: '妮菲塔莉是拉美西斯二世的王后，非独立法老。' }
+                    ]
+                },
+                quiz_explain1: { speaker: '⏳ 时间之神', text: '', next: 'quiz_q2' },
+                quiz_explain2: { speaker: '⏳ 时间之神', text: '', next: 'quiz_q3' },
+                quiz_explain3: { speaker: '⏳ 时间之神', text: '', next: 'quiz_success' },
+                quiz_success: {
+                    speaker: '🛡️ 守卫',
+                    text: "你答对了所有问题，这是你的通行符印。（获得知识碎片+3）",
+                    onEnter: () => { state.knowledgePoints += 3; },
+                    next: 'pyramid_interior'
+                },
+                pyramid_interior: {
+                    speaker: '⏳ 时间之神',
+                    text: "你进入金字塔内部，中央石台上刻着古埃及众神的图案。要开启墓室，你需要回答关于神祇的三个问题。",
+                    next: 'gods_q1'
+                },
+                gods_q1: {
+                    speaker: '🦅 第一问',
+                    text: "冥界之神，被其兄弟赛特杀害后又复活的神是？",
+                    options: [
+                        { label: 'A. 荷鲁斯', isCorrect: false, explanation: '不对。荷鲁斯是奥西里斯之子，为父报仇。' },
+                        { label: 'B. 奥西里斯', isCorrect: true, explanation: '正确！奥西里斯被赛特杀害，后被伊西斯复活，成为冥界之王。' },
+                        { label: 'C. 阿努比斯', isCorrect: false, explanation: '不对。阿努比斯是丧葬之神，负责木乃伊制作。' },
+                        { label: 'D. 托特', isCorrect: false, explanation: '不对。托特是智慧与文字之神。' }
+                    ]
+                },
+                gods_q2: {
+                    speaker: '🐊 第二问',
+                    text: "智慧与文字之神，通常以朱鹭或狒狒形象出现的是？",
+                    options: [
+                        { label: 'A. 托特', isCorrect: true, explanation: '正确！托特神常以朱鹭头或狒狒形象出现，负责书写和智慧。' },
+                        { label: 'B. 索贝克', isCorrect: false, explanation: '不对。索贝克是鳄鱼神，象征法老的力量。' },
+                        { label: 'C. 凯布利', isCorrect: false, explanation: '不对。凯布利是圣甲虫神，象征日出和重生。' },
+                        { label: 'D. 舒', isCorrect: false, explanation: '不对。舒是大气之神，通常以头顶羽毛的形象出现。' }
+                    ]
+                },
+                gods_q3: {
+                    speaker: '👑 第三问',
+                    text: "法老的守护神，常以鹰头形象出现的是？",
+                    options: [
+                        { label: 'A. 拉', isCorrect: false, explanation: '不对。拉是太阳神，常以鹰头但头顶太阳圆盘。' },
+                        { label: 'B. 荷鲁斯', isCorrect: true, explanation: '正确！荷鲁斯是王权守护神，法老被视为荷鲁斯在人间的化身。' },
+                        { label: 'C. 阿蒙', isCorrect: false, explanation: '不对。阿蒙是新王国时期的国家神，常以人形出现。' },
+                        { label: 'D. 普塔', isCorrect: false, explanation: '不对。普塔是孟菲斯的主神，工匠保护神。' }
+                    ]
+                },
+                gods_explain1: { speaker: '⏳ 时间之神', text: '', next: 'gods_q2' },
+                gods_explain2: { speaker: '⏳ 时间之神', text: '', next: 'gods_q3' },
+                gods_explain3: { speaker: '⏳ 时间之神', text: '', next: 'gods_success' },
+                gods_success: {
+                    speaker: '✨ 墓室开启',
+                    text: "所有问题回答正确！墓室缓缓打开，你发现了大祭司叛国的密文——他勾结赫梯人，盗取宝石作为叛逃信物。历史真相得以保存。（获得知识碎片+4）",
+                    onEnter: () => { state.knowledgePoints += 4; },
+                    next: 'ending_summary'
+                },
+                ending_summary: {
+                    speaker: '⏳ 时间之神',
+                    text: '', // 动态填充
+                    options: []
+                },
+                finish: {
+                    speaker: '✨ 游戏结束',
+                    text: "感谢试玩《时间旅行者》古埃及篇！",
+                    options: []
+                },
+
+                // ========== 第二章：古希腊与罗马 ==========
+                chapter2_opening: {
+                    speaker: '⏳ 时间之神',
+                    text: '一阵强烈的白光闪过，你被带出埃及的沙漠，落入一处阳光明媚的山丘——不远处是一片用白石建成的城市，远处的卫城闪着金光，空气中弥漫着橄榄叶的香气与海风的咸味。',
+                    next: 'chapter2_intro'
+                },
+                chapter2_intro: {
+                    speaker: '⏳ 时间之神',
+                    text: '“欢迎进入第二文明节点：古希腊与罗马。你现在身处公元前 432 年的雅典，地处爱琴海东岸，是古希腊最具活力的城市邦。本章任务：协助一位青年哲人参与雅典的公民集会，深入了解民主制度；参与奥林匹亚竞技盛会；并穿越至罗马，协助市政官主持公共工程，理解法律与秩序之起源。”',
+                    next: 'acropolis_meet'
+                },
+                acropolis_meet: {
+                    speaker: '📖 叙述者',
+                    text: '卫城山脚，市集熙攘，人群中正在激烈争论，一个身穿灰布长袍的青年站在台阶上，神情专注地看着你。',
+                    next: 'sophus_meet'
+                },
+                sophus_meet: {
+                    speaker: '🧑 索福斯（年轻哲人学徒）',
+                    text: '“你是新来的陌生人？不属于任何市民团体，也不穿我们这儿的袍子……你不是雅典人。”',
+                    options: [
+                        { label: '“我是旅行者，路过。”', next: 'sophus_response1' },
+                        { label: '“我对你们的哲学很好奇。”', next: 'sophus_response2' },
+                        { label: '“我来，是为寻找‘民主的真意’。”', next: 'sophus_response3' },
+                        { label: '“这座城市为什么如此喧闹？”', next: 'sophus_question1' }
+                    ]
+                },
+                sophus_question1: {
+                    speaker: '🧑 索福斯',
+                    text: '“喧闹？这正是民主的声音。每个公民都有权发表意见，虽然有时嘈杂，但这就是自由。来吧，我带你见识真正的‘言语之战’。”',
+                    next: 'sophus_next'
+                },
+                sophus_response1: {
+                    speaker: '🧑 索福斯',
+                    text: '“路过也不妨听听苏格拉底明日演讲。这座城市每天都在产生新的思想。”',
+                    next: 'sophus_next'
+                },
+                sophus_response2: {
+                    speaker: '🧑 索福斯',
+                    text: '“那么你得学会提问。哲学始于惊奇和质疑。”',
+                    next: 'sophus_next'
+                },
+                sophus_response3: {
+                    speaker: '🧑 索福斯',
+                    text: '“你的话像从柏拉图口中冒出。有意思，跟我来吧。”',
+                    next: 'sophus_next'
+                },
+                sophus_next: {
+                    speaker: '🧑 索福斯',
+                    text: '“这座城市看起来很繁荣，到处都是讨论的人群。这就是雅典的魅力所在。我们相信，真理源于辩论，智慧来自质疑。看那边的集会，普通公民正在讨论是否应该与斯巴达开战。在其他城邦，这种决定只由君王做出。但在雅典，每个公民都有发言权。虽然有时混乱，但这就是我们的方式。”',
+                    next: 'sophus_democracy'
+                },
+                sophus_democracy: {
+                    speaker: '🧑 索福斯',
+                    text: '“所有人都能参与决策吗？只有成年男性公民。女性、奴隶和外邦人没有这种权利。完美？远非如此。但比起暴君统治，这已是巨大进步。来，陪我一起前往公民集会。你会看到真正的‘言语之战’。”',
+                    next: 'assembly'
+                },
+                assembly: {
+                    speaker: '📖 叙述者',
+                    text: '石柱林立的剧场中，百余名男子席地而坐，辩者站在中央讲台，台下掌声与嘘声交替。',
+                    next: 'assembly_sophus'
+                },
+                assembly_sophus: {
+                    speaker: '🧑 索福斯',
+                    text: '“在这里，所有公民都能发言。民主不是完美的，但它值得争论。”',
+                    next: 'assembly_speaker'
+                },
+                assembly_speaker: {
+                    speaker: '🗣️ 演说者',
+                    text: '“雅典公民们！我们应当增加对神庙的拨款，以求诸神保佑我们的城邦！”',
+                    next: 'assembly_opponent'
+                },
+                assembly_opponent: {
+                    speaker: '🗣️ 反对者',
+                    text: '“我们的钱应该用于建造更多战船！波斯人和斯巴达人虎视眈眈！”',
+                    next: 'assembly_sophus2'
+                },
+                assembly_sophus2: {
+                    speaker: '🧑 索福斯',
+                    text: '“看到了吗？每个决定都要经过辩论和投票。这就是我们的力量，也是我们的弱点。”',
+                    next: 'assembly_weakness'
+                },
+                assembly_weakness: {
+                    speaker: '🧑 索福斯',
+                    text: '“决策缓慢，有时被情绪左右。但我宁愿慢一点，也不要一个人独断专行。你想试试吗？站上讲台，参与辩论。让我看看你的思辨能力。”',
+                    options: [
+                        { label: '“我愿意一试。”', next: 'debate_start' },
+                        { label: '“我担心自己说不好。”', next: 'assembly_encourage' }
+                    ]
+                },
+                assembly_encourage: {
+                    speaker: '🧑 索福斯',
+                    text: '“别担心，真理越辩越明。在这里，勇气和智慧同样重要。来吧，试试你的思辨能力。”',
+                    next: 'debate_start'
+                },
+                debate_start: {
+                    speaker: '🧑 索福斯',
+                    text: '下面5个辩题，你会如何辩论？',
+                    next: 'debate_q1'
+                },
+                debate_q1: {
+                    speaker: '🔤 第一辩',
+                    text: '议题：是否应向斯巴达宣战？',
+                    options: [
+                        { label: 'A. 宣战，斯巴达威胁雅典的霸权', isCorrect: false, explanation: '不对。伯里克利时代的雅典更倾向于通过外交和防御策略，而非主动宣战。' },
+                        { label: 'B. 和平，通过外交手段解决分歧', isCorrect: true, explanation: '正确！雅典在伯里克利时期主张谨慎，尽量避免大规模战争。' },
+                        { label: 'C. 宣战，因为斯巴达阻碍贸易', isCorrect: false, explanation: '不对。贸易问题并非主要矛盾。' },
+                        { label: 'D. 无所谓，交给神明决定', isCorrect: false, explanation: '不对。雅典人重视理性决策。' }
+                    ]
+                },
+                debate_q2: {
+                    speaker: '🔤 第二辩',
+                    text: '议题：是否应改革教育，让更多公民接受哲学训练？',
+                    options: [
+                        { label: 'A. 应该，哲学培养理性公民', isCorrect: true, explanation: '正确！苏格拉底、柏拉图都主张通过哲学培养美德。' },
+                        { label: 'B. 不应该，传统教育已足够', isCorrect: false, explanation: '不对。雅典教育重视体育和音乐，但哲学逐渐受到重视。' },
+                        { label: 'C. 只允许贵族学习哲学', isCorrect: false, explanation: '不对。这与雅典民主精神相悖。' },
+                        { label: 'D. 哲学无用，应专注军事', isCorrect: false, explanation: '不对。雅典人重视全面发展。' }
+                    ]
+                },
+                debate_q3: {
+                    speaker: '🔤 第三辩',
+                    text: '议题：是否应放宽贸易限制，允许外邦商人定居？',
+                    options: [
+                        { label: 'A. 允许，促进经济繁荣', isCorrect: true, explanation: '正确！雅典的繁荣很大程度上依赖贸易和外邦人。' },
+                        { label: 'B. 禁止，保护本地商人', isCorrect: false, explanation: '不对。这会导致经济封闭。' },
+                        { label: 'C. 有条件允许，需缴税', isCorrect: false, explanation: '不完全。雅典对外邦人有一定限制，但贸易相对开放。' },
+                        { label: 'D. 完全不限制', isCorrect: false, explanation: '不对。外邦人仍没有公民权。' }
+                    ]
+                },
+                debate_q4: {
+                    speaker: '🔤 第四辩',
+                    text: '议题：是否应加强海军建设，扩大雅典的海上霸权？',
+                    options: [
+                        { label: 'A. 应该，海军是雅典的命脉', isCorrect: true, explanation: '正确！雅典海军是其帝国的基础，提洛同盟依靠海军力量。' },
+                        { label: 'B. 不应该，陆军更重要', isCorrect: false, explanation: '不对。雅典的强项是海军，陆军主要由斯巴达主导。' },
+                        { label: 'C. 保持现状即可', isCorrect: false, explanation: '不对，在伯罗奔尼撒战争前夕，海军建设至关重要。' },
+                        { label: 'D. 将海军预算转给神庙', isCorrect: false, explanation: '不符合雅典的战略需求。' }
+                    ]
+                },
+                debate_q5: {
+                    speaker: '🔤 第五辩',
+                    text: '议题：是否应改革公民大会的投票流程，引入抽签制？',
+                    options: [
+                        { label: 'A. 应该，抽签更能体现平等', isCorrect: true, explanation: '正确！雅典民主中许多官职通过抽签产生，体现直接民主。' },
+                        { label: 'B. 不应该，选举更可靠', isCorrect: false, explanation: '选举容易产生精英统治，不符合雅典民主理念。' },
+                        { label: 'C. 抽签会导致混乱', isCorrect: false, explanation: '雅典实践证明抽签可行。' },
+                        { label: 'D. 交给十将军决定', isCorrect: false, explanation: '十将军是选举产生，不适用于公民大会。' }
+                    ]
+                },
+                debate_explain1: { speaker: '⏳ 时间之神', text: '', next: 'debate_q2' },
+                debate_explain2: { speaker: '⏳ 时间之神', text: '', next: 'debate_q3' },
+                debate_explain3: { speaker: '⏳ 时间之神', text: '', next: 'debate_q4' },
+                debate_explain4: { speaker: '⏳ 时间之神', text: '', next: 'debate_q5' },
+                debate_explain5: { speaker: '⏳ 时间之神', text: '', next: 'debate_interlude' },
+                debate_interlude: {
+                    speaker: '🧑 索福斯',
+                    text: '“你的辩论技巧令人赞叹！公民们为你的观点喝彩。看来你已经理解了雅典民主的精髓——通过理性的辩论达成共识。（获得知识碎片+5）现在，让我们前往奥林匹亚，那里有更激动人心的挑战等着你。”',
+                    onEnter: () => { state.knowledgePoints += 5; },
+                    next: 'to_olympia'
+                },
+                to_olympia: {
+                    speaker: '🧑 索福斯',
+                    text: '“现在，我们该前往奥林匹亚——四年一度的竞技盛会即将开始。那里不仅有体育竞技，更是希腊各城邦展示荣耀的舞台。”',
+                    options: [
+                        { label: '“奥林匹亚在什么地方？”', next: 'olympia_location' },
+                        { label: '“我们走吧。”', next: 'olympia_why' }
+                    ]
+                },
+                olympia_location: {
+                    speaker: '🧑 索福斯',
+                    text: '“奥林匹亚在伯罗奔尼撒半岛西海岸，是祭祀宙斯的圣地。每四年，全希腊的运动员聚集于此，展示力量与荣耀。走吧，我路上给你细讲。”',
+                    next: 'olympia_why'
+                },
+                olympia_why: {
+                    speaker: '🧑 索福斯',
+                    text: '“为什么体育竞技对希腊人如此重要？我们相信身体与心灵的平衡。强健的体魄孕育清晰的思想。更重要的是，奥林匹克让所有希腊城邦暂时放下分歧，共同庆祝我们的文化。即使是敌对的城邦，在比赛期间也会停止战争。这是神圣的休战。”',
+                    next: 'olympia_scene'
+                },
+                olympia_scene: {
+                    speaker: '📖 叙述者',
+                    text: '火炬燃起，竞技场回响起鼓声，选手们正在进行长跑、投掷与摔跤预赛。',
+                    next: 'olympia_sophus'
+                },
+                olympia_sophus: {
+                    speaker: '🧑 索福斯',
+                    text: '“想参加比赛？你得先通过体能与智慧双考验。”',
+                    options: [
+                        { label: '“当然，我准备好了。”', next: 'olympia_challenge' },
+                        { label: '“我需要先了解一下规则。”', next: 'olympia_rules' }
+                    ]
+                },
+                olympia_rules: {
+                    speaker: '🏃 运动员',
+                    text: '“规则很简单：不得作弊，不得伤人，光荣地输胜过不光彩地赢。去吧，接受考验。”',
+                    next: 'olympia_challenge'
+                },
+                olympia_challenge: {
+                    speaker: '🏃 运动员',
+                    text: '“外乡人，你也想参赛？记住，在这里作弊比失败更可耻。宁可光荣地输，也不要不光彩地赢。”',
+                    next: 'olympic_start'
+                },
+                olympic_start: {
+                    speaker: '🔰 测试官',
+                    text: '知识问答——只有了解奥林匹克精神的人才能参赛。',
+                    next: 'olympic_q1'
+                },
+                olympic_q1: {
+                    speaker: '🔰 第一问',
+                    text: '古代奥运会最早的比赛项目是什么？',
+                    options: [
+                        { label: 'A. 摔跤', isCorrect: false, explanation: '不对。最早的记录是短跑。' },
+                        { label: 'B. 短跑', isCorrect: true, explanation: '正确！公元前776年第一届奥运会只有短跑项目。' },
+                        { label: 'C. 拳击', isCorrect: false, explanation: '不对。拳击后来才加入。' },
+                        { label: 'D. 战车赛', isCorrect: false, explanation: '不对。战车赛出现较晚。' }
+                    ]
+                },
+                olympic_q2: {
+                    speaker: '🔰 第二问',
+                    text: '奥运会的“神圣休战”是指什么？',
+                    options: [
+                        { label: 'A. 比赛期间禁止争吵', isCorrect: false, explanation: '不对。是停止战争。' },
+                        { label: 'B. 各城邦在奥运会期间停止战争', isCorrect: true, explanation: '正确！确保运动员和观众安全。' },
+                        { label: 'C. 休战一天让运动员休息', isCorrect: false, explanation: '不对。' },
+                        { label: 'D. 只有祭司可以参与', isCorrect: false, explanation: '不对。' }
+                    ]
+                },
+                olympic_q3: {
+                    speaker: '🔰 第三问',
+                    text: '古代奥运会获胜者最初获得的奖品是什么？',
+                    options: [
+                        { label: 'A. 金牌', isCorrect: false, explanation: '不对。金牌是现代奥运会的传统。' },
+                        { label: 'B. 橄榄枝冠冕', isCorrect: true, explanation: '正确！最初奖品就是橄榄枝编成的冠冕，象征荣誉。' },
+                        { label: 'C. 银币', isCorrect: false, explanation: '不对。古希腊人不发奖金。' },
+                        { label: 'D. 奴隶', isCorrect: false, explanation: '不对。' }
+                    ]
+                },
+                olympic_explain1: { speaker: '⏳ 时间之神', text: '', next: 'olympic_q2' },
+                olympic_explain2: { speaker: '⏳ 时间之神', text: '', next: 'olympic_q3' },
+                olympic_explain3: { speaker: '⏳ 时间之神', text: '', next: 'olympic_interlude' },
+                olympic_interlude: {
+                    speaker: '🏅 裁判长',
+                    text: '“你不仅了解奥林匹克的历史，更展现了希腊人崇尚的身心平衡。（获得知识碎片+3）这枚橄榄枝冠冕属于你，它将带你进入罗马的篇章。”',
+                    onEnter: () => { state.knowledgePoints += 3; },
+                    next: 'time_jump_rome'
+                },
+                time_jump_rome: {
+                    speaker: '⏳ 时间之神',
+                    text: '奥林匹亚的阳光突然扭曲，时光之神的光芒包围你，空间撕裂，时间流动加速——当视线重新清晰，你已站在一座宏伟的石砌广场中，身着托加长袍的人们匆忙穿行，远处是巍峨的神庙与元老院。',
+                    next: 'chronos_rome'
+                },
+                chronos_rome: {
+                    speaker: '⏳ 时间之神',
+                    text: '“时间坐标已调整：公元前 80 年，罗马共和国晚期。罗马继承并发展了希腊文明，但更注重实用与秩序。请寻找马库斯·维特鲁威，他是一位工程师与建筑师。”',
+                    next: 'marcus_meet'
+                },
+                marcus_meet: {
+                    speaker: '👨‍🔧 马库斯·维特鲁威',
+                    text: '“你是元老院派来的新助手？正好，我需要帮手。罗马正在扩张，我们需要建造新的水道，但遇到了技术难题。跟我来，我会向你展示罗马工程的伟大之处。”',
+                    options: [
+                        { label: '“我很荣幸。”', next: 'marcus_roman' }
+                        // 已移除“水道是什么？”选项
+                    ]
+                },
+                marcus_explain: {
+                    speaker: '👨‍🔧 马库斯',
+                    text: '“水道就是引水渠，将山泉水引入城市。没有水，罗马就无法维持百万人口。这是文明的基础。”',
+                    next: 'marcus_roman'
+                },
+                marcus_roman: {
+                    speaker: '👨‍🔧 马库斯',
+                    text: '“罗马的秘密在于三样东西：拱门、混凝土和纪律。希腊人追求美学和哲学，而我们罗马人注重实用和耐久。看那座水道桥——它已经使用了五十年，还将继续服务五百年。这就是罗马的方式。”',
+                    next: 'engineer_problem'
+                },
+                engineer_problem: {
+                    speaker: '👷 路过的工程师',
+                    text: '“马库斯，元老院催促进度。他们说东区居民抱怨水源不足。”',
+                    next: 'marcus_response'
+                },
+                marcus_response: {
+                    speaker: '👨‍🔧 马库斯',
+                    text: '“告诉他们，匆忙的工程会崩塌。罗马不是一天建成的。（转向你）这就是我们面临的问题——政治需求与工程现实的冲突。你看起来很聪明，也许能帮我设计一条既快速又坚固的水道路线？”',
+                    options: [
+                        { label: '“我试试看。”', next: 'aqueduct_start' },
+                        { label: '“为什么不能加快速度？”', next: 'marcus_speed' }
+                    ]
+                },
+                marcus_speed: {
+                    speaker: '👨‍🔧 马库斯',
+                    text: '“因为地基需要时间稳固，混凝土需要时间凝固。匆忙只会带来坍塌。罗马不是一天建成的，我们必须坚持原则。”',
+                    next: 'aqueduct_start'
+                },
+                aqueduct_start: {
+                    speaker: '🛠️ 设计挑战',
+                    text: '你需要选择最合适的水道设计方案，平衡成本与效率。',
+                    next: 'aqueduct_q'
+                },
+                aqueduct_q: {
+                    speaker: '🔧 设计问题',
+                    text: '在山区到城市之间，有一段峡谷需要跨越，以下哪种结构最合适？',
+                    options: [
+                        { label: 'A. 直接用填土筑堤', isCorrect: false, explanation: '不对，成本高且易塌。' },
+                        { label: 'B. 建造多层拱桥', isCorrect: true, explanation: '正确！罗马人常用多层拱桥跨越峡谷。' },
+                        { label: 'C. 挖隧道绕过', isCorrect: false, explanation: '不对，耗时太长。' },
+                        { label: 'D. 用铅管铺设', isCorrect: false, explanation: '不对，成本高且不牢固。' }
+                    ]
+                },
+                aqueduct_success: {
+                    speaker: '👨‍🔧 马库斯',
+                    text: '“不错的设计！你平衡了成本与效率，这正是罗马工程师的思维方式。（获得知识碎片+2）”',
+                    onEnter: () => { state.knowledgePoints += 2; },
+                    next: 'senate_need'
+                },
+                senate_need: {
+                    speaker: '👨‍🔧 马库斯',
+                    text: '“现在，跟我去元老院，我们需要为这个工程争取支持。”',
+                    next: 'senate_scene'
+                },
+                senate_scene: {
+                    speaker: '📖 叙述者',
+                    text: '大理石柱环绕的圆形厅堂，阶梯式座位上坐满身着白色托加袍的元老，中央讲台上正在进行激烈辩论。',
+                    next: 'marcus_senate'
+                },
+                marcus_senate: {
+                    speaker: '👨‍🔧 马库斯',
+                    text: '“在罗马，法律与秩序高于一切。即使是执政官也必须遵守法律。我们的工程计划需要通过元老院批准，但有人反对。你需要帮我说服他们。”',
+                    next: 'senator1'
+                },
+                senator1: {
+                    speaker: '👴 元老卡西乌斯',
+                    text: '“这项工程预算过高！罗马正在多条战线作战，国库紧张！”',
+                    next: 'senator2'
+                },
+                senator2: {
+                    speaker: '👴 元老塞维鲁斯',
+                    text: '“但没有足够的水，城市将面临疾病和动乱。这是必要的投资。”',
+                    next: 'marcus_choice'
+                },
+                marcus_choice: {
+                    speaker: '👨‍🔧 马库斯',
+                    text: '“看到了吗？在罗马，一切都要通过法律程序。你需要帮我说服他们，展示这个工程对罗马的价值。记住，罗马人重视三点：效率、法律和荣耀。”',
+                    options: [
+                        { label: '“我明白了。”', next: 'senate_debate_start' },
+                        { label: '“该怎么说服他们？”', next: 'marcus_advice' }
+                    ]
+                },
+                marcus_advice: {
+                    speaker: '👨‍🔧 马库斯',
+                    text: '“强调长远收益、引用法律条文、诉诸罗马荣耀——这就是策略。”',
+                    next: 'senate_debate_start'
+                },
+                senate_debate_start: {
+                    speaker: '📜 元老院辩论',
+                    text: '第一轮：面对卡西乌斯的质疑，你会如何回应？',
+                    next: 'senate_q1'
+                },
+                senate_q1: {
+                    speaker: '📜 第一论',
+                    text: '如何反驳“预算过高”？',
+                    options: [
+                        { label: 'A. 强调工程的长远收益', isCorrect: true, explanation: '正确！长远来看，供水能促进经济，减少疾病。' },
+                        { label: 'B. 要求元老院增加税收', isCorrect: false, explanation: '不对，这会引起更大反对。' },
+                        { label: 'C. 表示可以偷工减料', isCorrect: false, explanation: '不对，违反罗马工程标准。' },
+                        { label: 'D. 放弃这个方案', isCorrect: false, explanation: '不对，没有解决问题。' }
+                    ]
+                },
+                senate_q2: {
+                    speaker: '📜 第二论',
+                    text: '如何回应“技术可行性”的质疑？',
+                    options: [
+                        { label: 'A. 引用维特鲁威的著作', isCorrect: true, explanation: '正确！维特鲁威的《建筑十书》是权威。' },
+                        { label: 'B. 保证不会出问题', isCorrect: false, explanation: '没有说服力。' },
+                        { label: 'C. 要求对方提出方案', isCorrect: false, explanation: '转移话题，非最佳。' },
+                        { label: 'D. 宣布工程延期', isCorrect: false, explanation: '不能解决质疑。' }
+                    ]
+                },
+                senate_q3: {
+                    speaker: '📜 第三论',
+                    text: '如何争取元老院的支持？',
+                    options: [
+                        { label: 'A. 诉诸罗马的荣耀', isCorrect: true, explanation: '正确！罗马人重视荣耀与后世评价。' },
+                        { label: 'B. 威胁辞职', isCorrect: false, explanation: '不对。' },
+                        { label: 'C. 私下贿赂', isCorrect: false, explanation: '不对，违背法律精神。' },
+                        { label: 'D. 请求执政官下令', isCorrect: false, explanation: '不符合元老院程序。' }
+                    ]
+                },
+                senate_q4: {
+                    speaker: '📜 第四论',
+                    text: '如何回应“为何不优先建造军事设施”的质疑？',
+                    options: [
+                        { label: 'A. 指出水与军事同等重要', isCorrect: true, explanation: '正确！稳定的后方对军事行动至关重要。' },
+                        { label: 'B. 同意推迟工程', isCorrect: false, explanation: '放弃工程不是好选择。' },
+                        { label: 'C. 承诺压缩工期', isCorrect: false, explanation: '可能影响质量。' },
+                        { label: 'D. 指责对方短视', isCorrect: false, explanation: '不够理性。' }
+                    ]
+                },
+                senate_explain1: { speaker: '⏳ 时间之神', text: '', next: 'senate_q2' },
+                senate_explain2: { speaker: '⏳ 时间之神', text: '', next: 'senate_q3' },
+                senate_explain3: { speaker: '⏳ 时间之神', text: '', next: 'senate_q4' },
+                senate_explain4: { speaker: '⏳ 时间之神', text: '', next: 'senate_success' },
+                senate_success: {
+                    speaker: '👨‍⚖️ 元老院首席',
+                    text: '“经过表决，元老院批准这项工程。马库斯·维特鲁威，你和你的助手将负责监督建设。愿这座水道彰显罗马的荣光，为帝国服务千年。（获得知识碎片+4）”',
+                    onEnter: () => { state.knowledgePoints += 4; },
+                    next: 'chapter2_ending'
+                },
+                chapter2_ending: {
+                    speaker: '⏳ 时间之神',
+                    text: '', // 动态填充
+                    options: []
+                },
+
+                // ========== 第三章：信仰与荣耀 - 中世纪欧洲 ==========
+                chapter3_opening: {
+                    speaker: '⏳ 时间之神',
+                    text: '罗马的阳光消散，时光之神的光芒再次包围你。时空隧道中，你看到罗马帝国的崩塌、蛮族的入侵、黑暗时代的混乱——然后是教堂的兴起、城堡的建造、骑士的誓言。当视线重新清晰，你站在一片绿意盎然的田野上，远处是石砌的村庄，天空中耸立着一座宏伟的哥特式教堂尖塔。',
+                    next: 'chapter3_intro'
+                },
+                chapter3_intro: {
+                    speaker: '⏳ 时间之神',
+                    text: '“时间坐标已调整：公元 1220 年，法兰西王国。你现在身处中世纪盛期，这是一个由信仰、荣誉与等级构成的世界。本章任务：协助一位骑士完成使命，了解封建社会结构，探索宗教与知识的关系，见证哥特艺术的诞生。”',
+                    next: 'meet_knight'
+                },
+                meet_knight: {
+                    speaker: '📖 叙述者',
+                    text: '麦田与果园间的小路上，一位身着锁子甲、披着蓝色斗篷的骑士正牵着马走来。他的盾牌上绘有银色鹰纹，神情疲惫但坚毅。',
+                    next: 'roland_meet'
+                },
+                roland_meet: {
+                    speaker: '⚔️ 罗兰骑士',
+                    text: '“站住，陌生人。你的衣着……非常奇特。你不是这片领地上的农民，也不像商人或僧侣。”',
+                    options: [
+                        { label: '“我是远方来的旅行者。”', next: 'roland_response1' },
+                        { label: '“我受命前来协助一位骑士。”', next: 'roland_response2' },
+                        { label: '“我对这个时代的骑士精神很感兴趣。”', next: 'roland_response3' },
+                        { label: '“这里发生了什么？为什么村民如此紧张？”', next: 'roland_question1' }
+                    ]
+                },
+                roland_question1: {
+                    speaker: '⚔️ 罗兰骑士',
+                    text: '“你观察得很敏锐。最近边境村庄发生怪事——农民失踪，牲畜死亡，有人说是女巫作祟。我奉命调查，但怀疑另有隐情。你愿意同行吗？”',
+                    next: 'roland_proposal'
+                },
+                roland_response1: {
+                    speaker: '⚔️ 罗兰骑士',
+                    text: '“这是危险的时代，旅行者。战争、疾病与强盗处处可见。但你既然来了，不妨帮我一个忙。”',
+                    next: 'roland_proposal'
+                },
+                roland_response2: {
+                    speaker: '⚔️ 罗兰骑士',
+                    text: '“协助？谁派你来的？主教还是伯爵？不管怎样，如果你不是恶人，或许可以帮我调查村庄的怪事。”',
+                    next: 'roland_proposal'
+                },
+                roland_response3: {
+                    speaker: '⚔️ 罗兰骑士',
+                    text: '“骑士精神……你说话如同学者。有趣。但真正的骑士精神需要行动证明，跟我来吧。”',
+                    next: 'roland_proposal'
+                },
+                roland_proposal: {
+                    speaker: '⚔️ 罗兰骑士',
+                    text: '“我奉命调查边境村庄的怪事——农民失踪，牲畜死亡，有人说是女巫作祟。但我怀疑背后另有隐情。你愿意同行吗？”',
+                    options: [
+                        { label: '“当然，我很乐意帮忙。”', next: 'village_investigation' }
+                        // 已移除“这些村民相信是女巫造成的灾难？”选项
+                    ]
+                },
+                roland_explain: {
+                    speaker: '⚔️ 罗兰骑士',
+                    text: '“人们总是需要解释不幸，而女巫、魔鬼是最容易的答案。但作为骑士，我宣誓保护弱者，追求真相。我的剑为荣誉而战，不为恐惧与偏见服务。”',
+                    next: 'village_investigation'
+                },
+                village_investigation: {
+                    speaker: '📖 叙述者',
+                    text: '石墙环绕的小村庄，木制房屋，中央是石砌教堂。村民们衣着朴素，神情紧张。不远处山丘上矗立着一座修道院，钟声回荡。',
+                    next: 'village_mayor'
+                },
+                village_mayor: {
+                    speaker: '👨‍🌾 村长',
+                    text: '“骑士大人！感谢您的到来。我们村遭受了魔鬼的诅咒！三个孩子失踪了，牲畜无故死亡，井水变浑浊……一定是森林边那个独居的老妇人——她懂草药，会与动物说话！”',
+                    next: 'roland_investigate'
+                },
+                roland_investigate: {
+                    speaker: '⚔️ 罗兰骑士',
+                    text: '“我需要证据，不是恐慌。带我去看看井水和死去的牲畜。（转向你）你看起来有见识，能帮我调查吗？”',
+                    next: 'investigation_q1'
+                },
+                investigation_q1: {
+                    speaker: '🔍 看看井水',
+                    text: '井水呈淡黄色，有异味，可能是什么原因？',
+                    options: [
+                        { label: 'A. 女巫下毒', isCorrect: false, explanation: '不对，需要科学分析。' },
+                        { label: 'B. 上游矿物污染', isCorrect: true, explanation: '正确！可能是上游的采矿或制革作坊污染水源。' },
+                        { label: 'C. 魔鬼诅咒', isCorrect: false, explanation: '这是迷信说法。' },
+                        { label: 'D. 井底有死动物', isCorrect: false, explanation: '有可能，但不是主要线索。' }
+                    ]
+                },
+                investigation_q2: {
+                    speaker: '🔍 检查牲畜',
+                    text: '牲畜症状：口吐白沫、抽搐，可能是什么病？',
+                    options: [
+                        { label: 'A. 巫术诅咒', isCorrect: false, explanation: '需要科学解释。' },
+                        { label: 'B. 食物中毒', isCorrect: true, explanation: '正确！可能是吃了有毒植物或被污染的水。' },
+                        { label: 'C. 瘟疫', isCorrect: false, explanation: '瘟疫通常有其他症状。' },
+                        { label: 'D. 营养不良', isCorrect: false, explanation: '营养不良不会引起抽搐。' }
+                    ]
+                },
+                investigation_q3: {
+                    speaker: '🔍 问问老妇人',
+                    text: '失踪的孩子最后出现在哪里？',
+                    options: [
+                        { label: 'A. 森林边', isCorrect: false, explanation: '可能是，但需要进一步证据。' },
+                        { label: 'B. 修道院附近', isCorrect: true, explanation: '正确！孩子们可能误入修道院新挖的地窖。' },
+                        { label: 'C. 河边', isCorrect: false, explanation: '未发现相关痕迹。' },
+                        { label: 'D. 老妇人屋外', isCorrect: false, explanation: '这是村民的猜测。' }
+                    ]
+                },
+                investigation_explain1: { speaker: '⏳ 时间之神', text: '', next: 'investigation_q2' },
+                investigation_explain2: { speaker: '⏳ 时间之神', text: '', next: 'investigation_q3' },
+                investigation_explain3: { speaker: '⏳ 时间之神', text: '', next: 'investigation_success' },
+                investigation_success: {
+                    speaker: '⚔️ 罗兰骑士',
+                    text: '“你的调查很有道理！井水污染可能与上游修道院的新建筑有关，不是什么巫术。我们去修道院看看。（获得知识碎片+3）”',
+                    onEnter: () => { state.knowledgePoints += 3; },
+                    next: 'monastery_arrival'
+                },
+                monastery_arrival: {
+                    speaker: '📖 叙述者',
+                    text: '修道院内，院长正在祈祷。四周是抄写室和图书馆，修士们安静地工作。',
+                    next: 'abbot_meet'
+                },
+                abbot_meet: {
+                    speaker: '👨‍🦳 修道院院长',
+                    text: '“欢迎，骑士先生。我们修道院一直致力于知识保存与医学研究。新建的制革作坊？是的，我们用动物皮制作书籍装订……污染？这是严重的指控！我们怎会违背上帝的旨意伤害村民？”',
+                    next: 'roland_abbot'
+                },
+                roland_abbot: {
+                    speaker: '⚔️ 罗兰骑士',
+                    text: '“我们需要查看你们的古籍，也许能找到解决污染的方法。”',
+                    next: 'monastery_library'
+                },
+                monastery_library: {
+                    speaker: '📖 叙述者',
+                    text: '在堆满手稿的图书馆里，你需要解读拉丁文找到解决方法。',
+                    next: 'monastery_q1'
+                },
+                monastery_q1: {
+                    speaker: '📜 第一问',
+                    text: '中世纪修道院抄写的书籍主要使用什么材料？',
+                    options: [
+                        { label: 'A. 羊皮纸', isCorrect: true, explanation: '正确！羊皮纸由动物皮制成，耐用且珍贵。' },
+                        { label: 'B. 纸莎草纸', isCorrect: false, explanation: '纸莎草纸在埃及使用，中世纪欧洲多用羊皮纸。' },
+                        { label: 'C. 宣纸', isCorrect: false, explanation: '宣纸是中国发明。' },
+                        { label: 'D. 桦树皮', isCorrect: false, explanation: '不常用。' }
+                    ]
+                },
+                monastery_q2: {
+                    speaker: '📜 第二问',
+                    text: '修道院保存了大量古籍，其中最重要的是？',
+                    options: [
+                        { label: 'A. 圣经', isCorrect: true, explanation: '正确！圣经是修道院的核心典籍。' },
+                        { label: 'B. 亚里士多德著作', isCorrect: false, explanation: '亚里士多德著作也在保存之列，但圣经最重要。' },
+                        { label: 'C. 罗马法', isCorrect: false, explanation: '罗马法由世俗学者研究。' },
+                        { label: 'D. 荷马史诗', isCorrect: false, explanation: '荷马史诗在拜占庭更受重视。' }
+                    ]
+                },
+                monastery_q3: {
+                    speaker: '📜 第三问',
+                    text: '要处理皮革作坊的废水，中世纪最可能用什么方法？',
+                    options: [
+                        { label: 'A. 化学中和', isCorrect: false, explanation: '中世纪无化学知识。' },
+                        { label: 'B. 沉淀池过滤', isCorrect: true, explanation: '正确！修建沉淀池让废物沉淀后再排放。' },
+                        { label: 'C. 引流到别处', isCorrect: false, explanation: '只是转移污染。' },
+                        { label: 'D. 祈祷消除', isCorrect: false, explanation: '迷信做法。' }
+                    ]
+                },
+                monastery_explain1: { speaker: '⏳ 时间之神', text: '', next: 'monastery_q2' },
+                monastery_explain2: { speaker: '⏳ 时间之神', text: '', next: 'monastery_q3' },
+                monastery_explain3: { speaker: '⏳ 时间之神', text: '', next: 'monastery_success' },
+                monastery_success: {
+                    speaker: '👨‍🦳 修道院院长',
+                    text: '“你的智慧令人敬佩！我们将在下游修建沉淀池，不再污染村庄。作为感谢，请收下这本医书。（获得知识碎片+3）”',
+                    onEnter: () => { state.knowledgePoints += 3; },
+                    next: 'paris_journey'
+                },
+                paris_journey: {
+                    speaker: '⚔️ 罗兰骑士',
+                    text: '“问题解决了！现在我要去巴黎向主教汇报。你愿意同行吗？巴黎有最宏伟的圣母院和最智慧的学者。”',
+                    options: [
+                        { label: '“当然，我早就想见识哥特建筑。”', next: 'notre_dame_arrival' },
+                        { label: '“巴黎是什么样的城市？”', next: 'paris_description' }
+                    ]
+                },
+                paris_description: {
+                    speaker: '⚔️ 罗兰骑士',
+                    text: '“巴黎是法兰西的首都，塞纳河穿城而过。那里有大学、教堂、宫殿，学者和工匠从各地聚集。你会大开眼界的。”',
+                    next: 'notre_dame_arrival'
+                },
+                notre_dame_arrival: {
+                    speaker: '📖 叙述者',
+                    text: '巴黎街头喧嚣，圣母院巍峨耸立，彩色玻璃窗在阳光下熠熠生辉。',
+                    next: 'roland_paris'
+                },
+                roland_paris: {
+                    speaker: '⚔️ 罗兰骑士',
+                    text: '“这是我们时代最伟大的建筑，工匠们已建造了五十年，还将继续五十年。进去看看吧，我需要向主教汇报任务。”',
+                    next: 'master_mason'
+                },
+                master_mason: {
+                    speaker: '👨‍🔧 石匠行会大师',
+                    text: '“年轻人，你欣赏建筑之美？这不仅是石头的堆砌，更是信仰的体现。每一根立柱代表一位使徒，每一扇窗讲述一个圣经故事，每一个拱顶指向天堂。我们用几何学和数学计算，让石头变轻，让光明进入。”',
+                    next: 'cathedral_q1'
+                },
+                cathedral_q1: {
+                    speaker: '🏛️ 第一问',
+                    text: '哥特式建筑最典型的特征是什么？',
+                    options: [
+                        { label: 'A. 圆形拱顶', isCorrect: false, explanation: '圆形拱顶是罗马式建筑的特征。' },
+                        { label: 'B. 尖拱和飞扶壁', isCorrect: true, explanation: '正确！尖拱和飞扶壁是哥特建筑的核心创新。' },
+                        { label: 'C. 厚墙小窗', isCorrect: false, explanation: '厚墙小窗是早期中世纪建筑。' },
+                        { label: 'D. 大量雕刻', isCorrect: false, explanation: '雕刻很多但不是决定性特征。' }
+                    ]
+                },
+                cathedral_q2: {
+                    speaker: '🏛️ 第二问',
+                    text: '玫瑰窗的作用是什么？',
+                    options: [
+                        { label: 'A. 采光', isCorrect: false, explanation: '采光是其一，但更重要的是象征意义。' },
+                        { label: 'B. 讲述圣经故事', isCorrect: true, explanation: '正确！彩色玻璃窗向不识字的信徒讲述宗教故事。' },
+                        { label: 'C. 装饰', isCorrect: false, explanation: '装饰作用，但主要功能是教育。' },
+                        { label: 'D. 通风', isCorrect: false, explanation: '不是主要作用。' }
+                    ]
+                },
+                cathedral_q3: {
+                    speaker: '🏛️ 第三问',
+                    text: '巴黎圣母院属于哪种建筑风格？',
+                    options: [
+                        { label: 'A. 罗马式', isCorrect: false, explanation: '罗马式早于哥特式。' },
+                        { label: 'B. 哥特式', isCorrect: true, explanation: '正确！巴黎圣母院是哥特式建筑的代表。' },
+                        { label: 'C. 巴洛克', isCorrect: false, explanation: '巴洛克是17世纪风格。' },
+                        { label: 'D. 文艺复兴', isCorrect: false, explanation: '文艺复兴晚于哥特式。' }
+                    ]
+                },
+                cathedral_explain1: { speaker: '⏳ 时间之神', text: '', next: 'cathedral_q2' },
+                cathedral_explain2: { speaker: '⏳ 时间之神', text: '', next: 'cathedral_q3' },
+                cathedral_explain3: { speaker: '⏳ 时间之神', text: '', next: 'cathedral_success' },
+                cathedral_success: {
+                    speaker: '👨‍🔧 石匠行会大师',
+                    text: '“你有天赋！你的设计会被采用，成为圣母院的一部分。这就是我们工匠的荣耀——虽然名字无人知晓，但作品将存续千年。（获得知识碎片+3）”',
+                    onEnter: () => { state.knowledgePoints += 3; },
+                    next: 'university_arrival'
+                },
+                university_arrival: {
+                    speaker: '📖 叙述者',
+                    text: '巴黎大学区，学者与学生穿着长袍，热烈辩论。教室里，教授正在讲解亚里士多德的著作，学生们认真记录。',
+                    next: 'roland_university'
+                },
+                roland_university: {
+                    speaker: '⚔️ 罗兰骑士',
+                    text: '“这是知识的殿堂，比剑更锋利的地方。我的弟弟在这里学习，他说这里的辩论比战场更激烈。”',
+                    next: 'thomas_meet'
+                },
+                thomas_meet: {
+                    speaker: '🧑‍🎓 托马斯学者',
+                    text: '“你们对辩论感兴趣？正好！我们正要举行一场关于信仰与理性关系的辩论。需要一位公正的评判者，你看起来既不是教士也不是学者，或许能提供新视角？”',
+                    options: [
+                        { label: '“我很乐意当评判。”', next: 'university_q1' }
+                        // 已移除“信仰与理性有冲突吗？”选项
+                    ]
+                },
+                thomas_explain: {
+                    speaker: '🧑‍🎓 托马斯学者',
+                    text: '“这正是我们争论的核心。有些人认为理性会削弱信仰，另一些人认为理性可以帮助理解信仰。你的判断会很有价值。”',
+                    next: 'university_q1'
+                },
+                university_q1: {
+                    speaker: '📚 第一问',
+                    text: '中世纪大学主要教授哪七艺？',
+                    options: [
+                        { label: 'A. 文法、修辞、逻辑', isCorrect: false, explanation: '这是三艺，还有四艺。' },
+                        { label: 'B. 算术、几何、音乐、天文', isCorrect: false, explanation: '这是四艺，还有三艺。' },
+                        { label: 'C. 三艺和四艺', isCorrect: true, explanation: '正确！七艺包括文法、修辞、逻辑（三艺）和算术、几何、音乐、天文（四艺）。' },
+                        { label: 'D. 哲学、神学、法学', isCorrect: false, explanation: '这是高级学科。' }
+                    ]
+                },
+                university_q2: {
+                    speaker: '📚 第二问',
+                    text: '托马斯·阿奎那最重要的著作是？',
+                    options: [
+                        { label: 'A. 忏悔录', isCorrect: false, explanation: '忏悔录是奥古斯丁的作品。' },
+                        { label: 'B. 神学大全', isCorrect: true, explanation: '正确！神学大全综合了亚里士多德哲学与基督教神学。' },
+                        { label: 'C. 上帝之城', isCorrect: false, explanation: '上帝之城是奥古斯丁的作品。' },
+                        { label: 'D. 君主论', isCorrect: false, explanation: '君主论是马基雅维利的作品。' }
+                    ]
+                },
+                university_q3: {
+                    speaker: '📚 第三问',
+                    text: '中世纪大学的教学语言是什么？',
+                    options: [
+                        { label: 'A. 拉丁语', isCorrect: true, explanation: '正确！拉丁语是整个欧洲学术界的通用语言。' },
+                        { label: 'B. 法语', isCorrect: false, explanation: '法语是地方语言。' },
+                        { label: 'C. 英语', isCorrect: false, explanation: '英语当时不用于学术。' },
+                        { label: 'D. 德语', isCorrect: false, explanation: '德语当时不用于学术。' }
+                    ]
+                },
+                university_explain1: { speaker: '⏳ 时间之神', text: '', next: 'university_q2' },
+                university_explain2: { speaker: '⏳ 时间之神', text: '', next: 'university_q3' },
+                university_explain3: { speaker: '⏳ 时间之神', text: '', next: 'university_success' },
+                university_success: {
+                    speaker: '🧑‍🎓 托马斯学者',
+                    text: '“你的判断很有智慧。或许亚里士多德的逻辑与圣经的启示并非对立。我相信，理性是上帝赐予人类的工具，用来理解祂创造的世界。（获得知识碎片+3）”',
+                    onEnter: () => { state.knowledgePoints += 3; },
+                    next: 'castle_tournament'
+                },
+                castle_tournament: {
+                    speaker: '📖 叙述者',
+                    text: '边境城堡高耸，旗帜飘扬。庭院中骑士们正在训练，铁器碰撞声不绝。大厅内，贵族们享用盛宴，吟游诗人演唱骑士传奇。',
+                    next: 'roland_castle'
+                },
+                roland_castle: {
+                    speaker: '⚔️ 罗兰骑士',
+                    text: '“我的领主召集骑士，有重要任务。但首先，是骑士比武大会——展示武艺，赢得荣誉。你愿意作为我的侍从参加吗？”',
+                    options: [
+                        { label: '“我很荣幸！”', next: 'tournament_rules' }
+                        // 已移除“我不懂骑士比武的规则。”选项
+                    ]
+                },
+                roland_explain_rules: {
+                    speaker: '⚔️ 罗兰骑士',
+                    text: '“比武不仅是力量的较量，更是荣誉与礼仪的展示。击败对手重要，但如何击败更重要——骑士从不背后偷袭，不对无武器者出手。胜利带来荣耀，但不光彩的胜利比失败更可耻。”',
+                    next: 'tournament_q1'
+                },
+                tournament_rules: {
+                    speaker: '⚔️ 罗兰骑士',
+                    text: '“好！比武有三项：剑术对决、马上长枪、团体模拟战。让我们开始吧！”',
+                    next: 'tournament_q1'
+                },
+                tournament_q1: {
+                    speaker: '⚔️ 第一项：剑术对决',
+                    text: '在骑士比武中，什么行为是违反骑士精神的？',
+                    options: [
+                        { label: 'A. 攻击对方马匹', isCorrect: true, explanation: '正确！攻击马匹被视为卑鄙行为。' },
+                        { label: 'B. 正面冲锋', isCorrect: false, explanation: '正面冲锋是骑士荣誉的表现。' },
+                        { label: 'C. 遵守裁判指令', isCorrect: false, explanation: '遵守规则是骑士的美德。' },
+                        { label: 'D. 向对手致敬', isCorrect: false, explanation: '致敬是骑士礼仪。' }
+                    ]
+                },
+                tournament_q2: {
+                    speaker: '🏇 第二项：马上长枪',
+                    text: '马上长枪比武中，获胜的标准是什么？',
+                    options: [
+                        { label: 'A. 将对手刺下马', isCorrect: true, explanation: '正确！将对手击落下马是主要目标。' },
+                        { label: 'B. 刺穿对手盔甲', isCorrect: false, explanation: '比武通常不使用锋利武器。' },
+                        { label: 'C. 比谁跑得快', isCorrect: false, explanation: '不是比速度。' },
+                        { label: 'D. 最先到达终点', isCorrect: false, explanation: '这不是赛马。' }
+                    ]
+                },
+                tournament_q3: {
+                    speaker: '🛡️ 第三项：团体模拟战',
+                    text: '团体战中，骑士最应遵守的原则是？',
+                    options: [
+                        { label: 'A. 俘虏对手索取赎金', isCorrect: false, explanation: '俘虏赎金是现实，但比武中更重荣誉。' },
+                        { label: 'B. 保护同伴，团结一致', isCorrect: true, explanation: '正确！团队精神和对同伴的保护是骑士美德。' },
+                        { label: 'C. 尽可能多地击杀', isCorrect: false, explanation: '比武不致命。' },
+                        { label: 'D. 独自冲锋', isCorrect: false, explanation: '团体战需要配合。' }
+                    ]
+                },
+                tournament_explain1: { speaker: '⏳ 时间之神', text: '', next: 'tournament_q2' },
+                tournament_explain2: { speaker: '⏳ 时间之神', text: '', next: 'tournament_q3' },
+                tournament_explain3: { speaker: '⏳ 时间之神', text: '', next: 'tournament_success' },
+                tournament_success: {
+                    speaker: '🏅 伯爵',
+                    text: '“罗兰骑士，你和你的侍从表现出色！（获得知识碎片+3）现在，我有一项重要任务——边境城堡遭到神秘势力威胁，需要调查。这关乎我的领地，更关乎整个王国的安全。你们愿意接受吗？”',
+                    onEnter: () => { state.knowledgePoints += 3; },
+                    next: 'final_mission'
+                },
+                final_mission: {
+                    speaker: '⚔️ 罗兰骑士',
+                    text: '“我们愿为荣誉而战！”',
+                    next: 'mission_complete'
+                },
+                mission_complete: {
+                    speaker: '📖 叙述者',
+                    text: '任务完成后，城堡大厅内举行庆典。伯爵站在高台上，罗兰骑士单膝跪地，你站在一旁。',
+                    next: 'count_speech'
+                },
+                count_speech: {
+                    speaker: '🏅 伯爵',
+                    text: '“因你们的勇气与智慧，威胁已除，和平重返我的领地。罗兰，你再次证明了自己是最忠诚的骑士。（转向你）至于你，陌生人，虽然你来历不明，但你展现了真正的骑士精神。接受这枚徽章，从今以后，你在我的领地上永远受到欢迎。”',
+                    next: 'roland_farewell'
+                },
+                roland_farewell: {
+                    speaker: '⚔️ 罗兰骑士',
+                    text: '“我不知道你从何而来，但你让我重新思考了骑士的意义。不仅是战斗与忠诚，还有智慧与公正。无论你去往何方，愿上帝保佑你的旅程。”',
+                    next: 'chapter3_ending'
+                },
+                chapter3_ending: {
+                    speaker: '⏳ 时间之神',
+                    text: '', // 动态填充
+                    options: []
+                },
+
+                // ========== 第四章：艺术与科学的觉醒 - 文艺复兴 ==========
+                chapter4_opening: {
+                    speaker: '⏳ 时间之神',
+                    text: '中世纪的城堡逐渐消散，时光之神的光芒将你包围。时空隧道中，你看到哥特式教堂变为圆顶建筑，骑士盔甲被华丽服饰取代，修道院手稿变成印刷书籍。当视线重新清晰，你站在一座充满阳光的广场上，四周是精美的大理石建筑，艺术家在街头作画，学者们热烈讨论，空气中弥漫着新鲜油彩和希望的气息。',
+                    next: 'chapter4_intro'
+                },
+                chapter4_intro: {
+                    speaker: '⏳ 时间之神',
+                    text: '“时间坐标已调整：公元 1505 年，意大利佛罗伦萨。你现在身处文艺复兴盛期，这是一个重新发现古典智慧、崇尚人性与理性的时代。本章任务：协助莱昂纳多·达·芬奇完成重要作品，探索文艺复兴的艺术与科学革命，见证人类思想的重大转变。”',
+                    next: 'leonardo_meet'
+                },
+                leonardo_meet: {
+                    speaker: '🎨 莱昂纳多·达·芬奇',
+                    text: '“你是谁？我不记得邀请过你。不过你的衣着……非常特别。你是从远方来的吗？也许是东方？我一直对东方的科学很感兴趣。”',
+                    options: [
+                        { label: '“我是一位旅行者，对您的作品充满敬意。”', next: 'leonardo_response1' },
+                        { label: '“我有些特殊技能，也许能协助您的研究。”', next: 'leonardo_response2' },
+                        { label: '“我对艺术与科学的结合很感兴趣。”', next: 'leonardo_response3' },
+                        { label: '“这就是文艺复兴的中心佛罗伦萨吗？”', next: 'leonardo_question1' }
+                    ]
+                },
+                leonardo_question1: {
+                    speaker: '🎨 达·芬奇',
+                    text: '“正是！佛罗伦萨是美第奇家族的明珠，是艺术与思想的摇篮。看那边的圆顶，布鲁内莱斯基的作品；听那些辩论，关于柏拉图和亚里士多德的智慧。你来对了地方。”',
+                    next: 'leonardo_proposal'
+                },
+                leonardo_response1: {
+                    speaker: '🎨 达·芬奇',
+                    text: '“敬意？有趣。大多数人只看到表面的美，很少有人理解背后的原理。既然你感兴趣，不妨帮我一个忙。”',
+                    next: 'leonardo_proposal'
+                },
+                leonardo_response2: {
+                    speaker: '🎨 达·芬奇',
+                    text: '“每个人都有特殊之处。问题是，你能否将它用于探索真理？来，我需要帮助。”',
+                    next: 'leonardo_proposal'
+                },
+                leonardo_response3: {
+                    speaker: '🎨 达·芬奇',
+                    text: '“艺术与科学本就不该分离！观察是理解的基础，表达是知识的延伸。你来得正好，我正需要助手。”',
+                    next: 'leonardo_proposal'
+                },
+                leonardo_proposal: {
+                    speaker: '🎨 达·芬奇',
+                    text: '“我正在研究人体比例，需要更多数据。这些草图需要精确测量和计算，你看起来有条理的头脑。愿意试试吗？”',
+                    options: [
+                        { label: '“当然，我很乐意。”', next: 'vitruvian_start' },
+                        { label: '“人体比例？就像维特鲁威的建筑比例？”', next: 'leonardo_vitruvius' }
+                    ]
+                },
+                leonardo_vitruvius: {
+                    speaker: '🎨 达·芬奇',
+                    text: '“正是！古罗马建筑师维特鲁威提出，人体比例反映了宇宙的和谐。我正想用绘画证明这一点。来吧，让我们一起完成这幅《维特鲁威人》。',
+                    next: 'vitruvian_start'
+                },
+                vitruvian_start: {
+                    speaker: '📐 维特鲁威人',
+                    text: '达·芬奇向你展示人体比例图，你需要回答三个问题。',
+                    next: 'vitruvian_q1'
+                },
+                vitruvian_q1: {
+                    speaker: '📐 第一问',
+                    text: '根据维特鲁威的理论，人体的臂展大约等于什么？',
+                    options: [
+                        { label: 'A. 身高', isCorrect: true, explanation: '正确！维特鲁威认为人体臂展约等于身高，体现对称与和谐。' },
+                        { label: 'B. 一半身高', isCorrect: false, explanation: '不对。' },
+                        { label: 'C. 两倍身高', isCorrect: false, explanation: '不对。' },
+                        { label: 'D. 头长的三倍', isCorrect: false, explanation: '不对。' }
+                    ]
+                },
+                vitruvian_q2: {
+                    speaker: '📐 第二问',
+                    text: '达·芬奇画中人物的肚脐位置有什么几何意义？',
+                    options: [
+                        { label: 'A. 黄金分割点', isCorrect: true, explanation: '正确！肚脐大致是身高的黄金分割点，体现比例之美。' },
+                        { label: 'B. 中心点', isCorrect: false, explanation: '不对，中心在耻骨。' },
+                        { label: 'C. 任意点', isCorrect: false, explanation: '不对。' },
+                        { label: 'D. 与脚底无关', isCorrect: false, explanation: '不对。' }
+                    ]
+                },
+                vitruvian_q3: {
+                    speaker: '📐 第三问',
+                    text: '文艺复兴时期重新发现的古典著作中，维特鲁威的著作主要讲述什么？',
+                    options: [
+                        { label: 'A. 建筑学', isCorrect: true, explanation: '正确！维特鲁威的《建筑十书》是古典建筑经典。' },
+                        { label: 'B. 医学', isCorrect: false, explanation: '不对。' },
+                        { label: 'C. 天文学', isCorrect: false, explanation: '不对。' },
+                        { label: 'D. 军事', isCorrect: false, explanation: '不对。' }
+                    ]
+                },
+                vitruvian_explain1: { speaker: '⏳ 时间之神', text: '', next: 'vitruvian_q2' },
+                vitruvian_explain2: { speaker: '⏳ 时间之神', text: '', next: 'vitruvian_q3' },
+                vitruvian_explain3: { speaker: '⏳ 时间之神', text: '', next: 'vitruvian_success' },
+                vitruvian_success: {
+                    speaker: '🎨 达·芬奇',
+                    text: '“不错！你理解比例之美。这不仅是艺术，更是宇宙的数学法则。人体比例反映了整个宇宙的和谐——这正是我们这个时代重新发现的古典智慧。来，我想向你展示更多。（获得知识碎片+3）”',
+                    onEnter: () => { state.knowledgePoints += 3; },
+                    next: 'medici_library'
+                },
+                medici_library: {
+                    speaker: '📖 叙述者',
+                    text: '宏伟的图书馆大厅，书架上摆满古希腊和罗马手稿的抄本与新印刷的书籍。学者们围坐在长桌旁，热烈讨论柏拉图的对话录。',
+                    next: 'leonardo_library'
+                },
+                leonardo_library: {
+                    speaker: '🎨 达·芬奇',
+                    text: '“这是美第奇家族的图书馆，新思想的摇篮。看那边的印刷机——古腾堡的发明正在改变知识传播的方式。以前，一本书需要修士抄写数月；现在，同样的书可以一天印数十本。”',
+                    next: 'library_interact'
+                },
+                library_interact: {
+                    speaker: '🎨 达·芬奇',
+                    text: '“不过，有些古代知识仍然难以理解。我正在研究一份古希腊数学手稿，需要帮助。”',
+                    options: [
+                        { label: '“让我看看。”', next: 'library_q1' }
+                        // 已移除“古腾堡印刷术改变了世界？”选项
+                    ]
+                },
+                gutenberg_explain: {
+                    speaker: '🎨 达·芬奇',
+                    text: '“是的！知识不再是少数人的特权。这是一场革命。现在，帮我看看这份手稿。”',
+                    next: 'library_q1'
+                },
+                library_q1: {
+                    speaker: '📜 第一问',
+                    text: '古腾堡印刷术的发明大约在什么时间？',
+                    options: [
+                        { label: 'A. 1440年左右', isCorrect: true, explanation: '正确！古腾堡在15世纪中叶发明活字印刷术。' },
+                        { label: 'B. 1400年', isCorrect: false, explanation: '不对。' },
+                        { label: 'C. 1500年', isCorrect: false, explanation: '偏晚。' },
+                        { label: 'D. 1300年', isCorrect: false, explanation: '偏早。' }
+                    ]
+                },
+                library_q2: {
+                    speaker: '📜 第二问',
+                    text: '文艺复兴学者主要研究哪部古希腊著作？',
+                    options: [
+                        { label: 'A. 柏拉图对话录', isCorrect: true, explanation: '正确！柏拉图著作是人文主义者的核心读物。' },
+                        { label: 'B. 荷马史诗', isCorrect: false, explanation: '也重要，但不是核心。' },
+                        { label: 'C. 伊索寓言', isCorrect: false, explanation: '不对。' },
+                        { label: 'D. 亚里士多德《诗学》', isCorrect: false, explanation: '重要，但柏拉图的理想国等更受推崇。' }
+                    ]
+                },
+                library_q3: {
+                    speaker: '📜 第三问',
+                    text: '美第奇家族赞助艺术和学术的主要动机是什么？',
+                    options: [
+                        { label: 'A. 提升家族声望', isCorrect: true, explanation: '正确！通过赞助获取政治和文化影响力。' },
+                        { label: 'B. 纯粹热爱艺术', isCorrect: false, explanation: '不完全是。' },
+                        { label: 'C. 宗教义务', isCorrect: false, explanation: '不是主要。' },
+                        { label: 'D. 科学探索', isCorrect: false, explanation: '部分但不是主要。' }
+                    ]
+                },
+                library_explain1: { speaker: '⏳ 时间之神', text: '', next: 'library_q2' },
+                library_explain2: { speaker: '⏳ 时间之神', text: '', next: 'library_q3' },
+                library_explain3: { speaker: '⏳ 时间之神', text: '', next: 'library_success' },
+                library_success: {
+                    speaker: '🧑‍🏫 学者马尔西里奥',
+                    text: '“莱昂纳多，你的朋友似乎很有天赋。我们正在讨论柏拉图的《理想国》——古人的智慧与我们的时代如此相关！人应当由理性引导，国家应当由哲学家治理……这些思想正在改变我们的世界。（获得知识碎片+3）”',
+                    onEnter: () => { state.knowledgePoints += 3; },
+                    next: 'workshop_arrival'
+                },
+                workshop_arrival: {
+                    speaker: '📖 叙述者',
+                    text: '明亮的工作坊内，学徒们研磨颜料，准备画布。墙上挂着未完成的《蒙娜丽莎》，达·芬奇正对着模特调整光线。',
+                    next: 'leonardo_workshop'
+                },
+                leonardo_workshop: {
+                    speaker: '🎨 达·芬奇',
+                    text: '“这幅肖像我已经工作了数年，却仍不满意。我想捕捉的不只是她的外表，而是内在的生命与神秘。问题在于光影——我需要一种新的技法，让她的表情既真实又超越现实。”',
+                    options: [
+                        { label: '“也许可以尝试渐变的阴影？”', next: 'monalisa_idea' },
+                        { label: '“她的微笑很特别。”', next: 'monalisa_smile' }
+                    ]
+                },
+                monalisa_idea: {
+                    speaker: '🎨 达·芬奇',
+                    text: '“sfumato——烟雾式的过渡！正是我在寻找的！不是硬边界，而是如烟般的渐变，就像真实生活中的光影。来，帮我调配颜料，我们一起尝试这种技法。”',
+                    next: 'monalisa_q1'
+                },
+                monalisa_smile: {
+                    speaker: '🎨 达·芬奇',
+                    text: '“是的，那正是我想捕捉的。一种既在那里，又似乎不在的表情。让我们用sfumato技法来实现它。”',
+                    next: 'monalisa_q1'
+                },
+                monalisa_q1: {
+                    speaker: '🎨 第一问',
+                    text: 'sfumato技法的特点是什么？',
+                    options: [
+                        { label: 'A. 柔和渐变的色调', isCorrect: true, explanation: '正确！sfumato意为“烟雾状”，让色彩过渡柔和。' },
+                        { label: 'B. 强烈对比', isCorrect: false, explanation: '不对。' },
+                        { label: 'C. 明亮色彩', isCorrect: false, explanation: '不对。' },
+                        { label: 'D. 几何透视', isCorrect: false, explanation: '不对。' }
+                    ]
+                },
+                monalisa_q2: {
+                    speaker: '🎨 第二问',
+                    text: '《蒙娜丽莎》的背景采用了什么透视法？',
+                    options: [
+                        { label: 'A. 空气透视', isCorrect: true, explanation: '正确！远处的景物模糊朦胧，模拟空气效果。' },
+                        { label: 'B. 线性透视', isCorrect: false, explanation: '也有，但空气透视更突出。' },
+                        { label: 'C. 色彩透视', isCorrect: false, explanation: '属于空气透视的一种。' },
+                        { label: 'D. 消失点透视', isCorrect: false, explanation: '不对。' }
+                    ]
+                },
+                monalisa_q3: {
+                    speaker: '🎨 第三问',
+                    text: '文艺复兴时期艺术家常用哪种材料作画？',
+                    options: [
+                        { label: 'A. 蛋彩画', isCorrect: false, explanation: '早期常用，但达·芬奇推广油画。' },
+                        { label: 'B. 油画', isCorrect: true, explanation: '正确！达·芬奇是油画技术的先驱。' },
+                        { label: 'C. 水彩', isCorrect: false, explanation: '不常用。' },
+                        { label: 'D. 壁画', isCorrect: false, explanation: '湿壁画用于教堂，但不是油画。' }
+                    ]
+                },
+                monalisa_explain1: { speaker: '⏳ 时间之神', text: '', next: 'monalisa_q2' },
+                monalisa_explain2: { speaker: '⏳ 时间之神', text: '', next: 'monalisa_q3' },
+                monalisa_explain3: { speaker: '⏳ 时间之神', text: '', next: 'monalisa_success' },
+                monalisa_success: {
+                    speaker: '🎨 达·芬奇',
+                    text: '“完美！这种微笑既在那里，又似乎不在——就像真实的情感一样难以捉摸。艺术不是复制现实，而是揭示现实背后的真相。这幅画将成为我的代表作，感谢你的灵感。（获得知识碎片+3）”',
+                    onEnter: () => { state.knowledgePoints += 3; },
+                    next: 'laboratory_arrival'
+                },
+                laboratory_arrival: {
+                    speaker: '📖 叙述者',
+                    text: '达·芬奇的私人实验室，各种自制仪器、解剖模型、光学装置散布各处。窗外是佛罗伦萨的全景，夕阳将城市染成金色。',
+                    next: 'leonardo_lab'
+                },
+                leonardo_lab: {
+                    speaker: '🎨 达·芬奇',
+                    text: '“艺术只是我工作的一部分。真正的激情在于理解自然的奥秘。看这些——飞行器设计、水力装置、解剖图……我相信，通过观察和实验，人类能揭示宇宙的法则。”',
+                    next: 'lab_interact'
+                },
+                lab_interact: {
+                    speaker: '🎨 达·芬奇',
+                    text: '“来，帮我完成这个光学实验——我想证明眼睛如何感知颜色。”',
+                    options: [
+                        { label: '“我很有兴趣。”', next: 'optics_q1' }
+                        // 已移除“您的飞行器能飞吗？”选项
+                    ]
+                },
+                leonardo_flight: {
+                    speaker: '🎨 达·芬奇',
+                    text: '“也许不是在我的时代。但重要的是提出问题，探索可能性。先来看看这个光学实验。”',
+                    next: 'optics_q1'
+                },
+                optics_q1: {
+                    speaker: '🔬 第一问',
+                    text: '达·芬奇通过解剖研究人体，他对哪部分特别感兴趣？',
+                    options: [
+                        { label: 'A. 眼睛', isCorrect: true, explanation: '正确！达·芬奇深入研究眼睛和视觉机制。' },
+                        { label: 'B. 心脏', isCorrect: false, explanation: '也研究，但眼睛是他的重点。' },
+                        { label: 'C. 大脑', isCorrect: false, explanation: '有研究，但不是最突出。' },
+                        { label: 'D. 骨骼', isCorrect: false, explanation: '为艺术而研究，但光学更相关。' }
+                    ]
+                },
+                optics_q2: {
+                    speaker: '🔬 第二问',
+                    text: '光的色散现象（如彩虹）由谁首次系统研究？',
+                    options: [
+                        { label: 'A. 牛顿', isCorrect: false, explanation: '牛顿后来研究，但达·芬奇已观察并记录。' },
+                        { label: 'B. 达·芬奇', isCorrect: true, explanation: '正确！达·芬奇通过实验研究光的色散。' },
+                        { label: 'C. 伽利略', isCorrect: false, explanation: '伽利略研究天文。' },
+                        { label: 'D. 开普勒', isCorrect: false, explanation: '开普勒研究行星。' }
+                    ]
+                },
+                optics_q3: {
+                    speaker: '🔬 第三问',
+                    text: '达·芬奇的科学研究方法最接近现代科学中的什么？',
+                    options: [
+                        { label: 'A. 观察与实验', isCorrect: true, explanation: '正确！他强调观察自然和实验验证。' },
+                        { label: 'B. 纯粹理论', isCorrect: false, explanation: '不对。' },
+                        { label: 'C. 占星术', isCorrect: false, explanation: '不对。' },
+                        { label: 'D. 炼金术', isCorrect: false, explanation: '不准确。' }
+                    ]
+                },
+                optics_explain1: { speaker: '⏳ 时间之神', text: '', next: 'optics_q2' },
+                optics_explain2: { speaker: '⏳ 时间之神', text: '', next: 'optics_q3' },
+                optics_explain3: { speaker: '⏳ 时间之神', text: '', next: 'optics_success' },
+                optics_success: {
+                    speaker: '🎨 达·芬奇',
+                    text: '“看到了吗？自然遵循数学法则，而我们可以通过实验发现这些法则。这就是新的知识方式——不仅读书，还要观察、实验、验证。我的朋友伽利略正在用这种方法研究天体运动，他的发现将改变我们对宇宙的理解。（获得知识碎片+3）”',
+                    onEnter: () => { state.knowledgePoints += 3; },
+                    next: 'venice_arrival'
+                },
+                venice_arrival: {
+                    speaker: '📖 叙述者',
+                    text: '繁忙的威尼斯港口，各种船只停泊，水手和商人来往穿梭。造船厂内，工人们正在建造一艘大型远洋船。',
+                    next: 'leonardo_venice'
+                },
+                leonardo_venice: {
+                    speaker: '🎨 达·芬奇',
+                    text: '“威尼斯——连接东西方的桥梁，商业与探索的中心。看那艘船——它将前往新发现的土地，带回前所未见的财富和知识。这是一个探索的时代！哥伦布发现了新大陆，葡萄牙人正在寻找通往东方的海路。”',
+                    next: 'amerigo_meet'
+                },
+                amerigo_meet: {
+                    speaker: '🧭 阿美利哥·韦斯普奇',
+                    text: '“莱昂纳多！你带来了新的船舶设计吗？（注意到你）这位是？”',
+                    next: 'leonardo_intro'
+                },
+                leonardo_intro: {
+                    speaker: '🎨 达·芬奇',
+                    text: '“我的助手，对航海也很感兴趣。”',
+                    next: 'amerigo_proposal'
+                },
+                amerigo_proposal: {
+                    speaker: '🧭 阿美利哥',
+                    text: '“那么你来得正是时候！我们正准备一次前所未有的远航。但需要更精确的导航工具——你能帮忙改进这个星盘吗？”',
+                    options: [
+                        { label: '“让我看看。”', next: 'navigation_q1' },
+                        { label: '“新大陆是什么样的？”', next: 'amerigo_newworld' }
+                    ]
+                },
+                amerigo_newworld: {
+                    speaker: '🧭 阿美利哥',
+                    text: '“那片土地广阔无垠，充满未知。也许有一天，它会以我的名字命名！现在，帮我们改进星盘。”',
+                    next: 'navigation_q1'
+                },
+                navigation_q1: {
+                    speaker: '🧭 第一问',
+                    text: '星盘主要用于测量什么？',
+                    options: [
+                        { label: 'A. 纬度', isCorrect: true, explanation: '正确！通过测量天体高度确定纬度。' },
+                        { label: 'B. 经度', isCorrect: false, explanation: '经度需要精确时钟，当时无法测量。' },
+                        { label: 'C. 船速', isCorrect: false, explanation: '不对。' },
+                        { label: 'D. 水深', isCorrect: false, explanation: '不对。' }
+                    ]
+                },
+                navigation_q2: {
+                    speaker: '🧭 第二问',
+                    text: '哥伦布发现新大陆的时间是？',
+                    options: [
+                        { label: 'A. 1492年', isCorrect: true, explanation: '正确！1492年哥伦布抵达美洲。' },
+                        { label: 'B. 1488年', isCorrect: false, explanation: '迪亚士到达好望角。' },
+                        { label: 'C. 1500年', isCorrect: false, explanation: '偏晚。' },
+                        { label: 'D. 1519年', isCorrect: false, explanation: '麦哲伦环球航行。' }
+                    ]
+                },
+                navigation_q3: {
+                    speaker: '🧭 第三问',
+                    text: '达·芬奇对航海技术的贡献可能包括什么？',
+                    options: [
+                        { label: 'A. 船舶设计', isCorrect: true, explanation: '正确！达·芬奇画过许多船舶设计图。' },
+                        { label: 'B. 制造指南针', isCorrect: false, explanation: '指南针中国发明，欧洲改进。' },
+                        { label: 'C. 发明六分仪', isCorrect: false, explanation: '18世纪发明。' },
+                        { label: 'D. 绘制世界地图', isCorrect: false, explanation: '他画过地图，但主要不是航海。' }
+                    ]
+                },
+                navigation_explain1: { speaker: '⏳ 时间之神', text: '', next: 'navigation_q2' },
+                navigation_explain2: { speaker: '⏳ 时间之神', text: '', next: 'navigation_q3' },
+                navigation_explain3: { speaker: '⏳ 时间之神', text: '', next: 'navigation_success' },
+                navigation_success: {
+                    speaker: '🧭 阿美利哥',
+                    text: '“有了这个，我们能更准确地记录航线，绘制更精确的地图。新的大陆正等待我们探索——也许有一天，那片土地会以我的名字命名！世界比我们想象的要大得多，充满无限可能。（获得知识碎片+3）”',
+                    onEnter: () => { state.knowledgePoints += 3; },
+                    next: 'sistine_chapel'
+                },
+                sistine_chapel: {
+                    speaker: '📖 叙述者',
+                    text: '罗马，西斯廷教堂。米开朗基罗正在高高的脚手架上绘制天顶画，达·芬奇和你站在下方仰望。',
+                    next: 'leonardo_sistine'
+                },
+                leonardo_sistine: {
+                    speaker: '🎨 达·芬奇',
+                    text: '“看米开朗基罗的作品——他将人体之美提升到神圣的高度。这就是我们的时代精神：人既是自然的一部分，又能通过理性和创造接近神性。我们重新发现了古人的智慧，却不只是模仿，而是在此基础上创新。”',
+                    next: 'chapter4_ending'  // 跳过“你创造了如此多的作品”页面
+                },
+                // 已移除 leonardo_reflection 和 leonardo_answer
+                chapter4_ending: {
+                    speaker: '⏳ 时间之神',
+                    text: '', // 动态填充
+                    options: []
+                },
+
+                // ========== 第五章：回到未来 - 现代世界 ==========
+                chapter5_opening: {
+                    speaker: '⏳ 时间之神',
+                    text: '文艺复兴的罗马逐渐消散，时光之神的光芒比以往更加强烈。时空隧道中，你看到历史快速向前推进——工业革命的蒸汽机、两次世界大战的硝烟、太空时代的火箭、信息时代的计算机……画面越来越快，直到变成一片白光。当视线重新清晰，你发现自己站在一个圆形平台上，四周是半透明的全息投影，展示着你曾经访问过的所有时代。',
+                    onEnter: () => { state.timelineProgress = 0; state.modernQuizProgress = 0; state.exhibitionProgress = 0; },
+                    next: 'chronos_final'
+                },
+                chronos_final: {
+                    speaker: '⏳ 时间之神',
+                    text: '“最终时间坐标：公元21世纪初，你的原始时代。旅程即将完成，但在返回图书馆之前，还有最后的任务。你已经亲历了人类文明的关键节点，现在需要证明你已经理解了这些经历的意义。”',
+                    options: [
+                        { label: '“这是某种测试吗？”', next: 'chronos_final_response1' },
+                        { label: '“我准备好面对最后的挑战。”', next: 'timeline_start' }
+                    ]
+                },
+                chronos_final_response1: {
+                    speaker: '⏳ 时间之神',
+                    text: '“不只是测试，而是整合。历史不是孤立的片段，而是相互连接的整体。每个时代都建立在前人的基础上，又为后来者铺路。准备好开始最后的旅程了吗？”',
+                    options: [
+                        { label: '“是的，我准备好了。”', next: 'timeline_start' }
+                    ]
+                },
+                timeline_start: {
+                    speaker: '⏳ 时间之神',
+                    text: '一条发光的路径出现在你面前，两侧是你曾访问过的时代的场景：埃及神庙、希腊集会、罗马水道、中世纪城堡、文艺复兴工作室……\n\n“这是时间长廊，展示了你的旅程。但有些历史连接点尚未被激活。要完成时间图谱，你需要找出每个时代对后世的关键影响。”',
+                    next: 'timeline_q1'
+                },
+                timeline_q1: {
+                    speaker: '🔗 文明连接 第一问',
+                    text: '以下哪种顺序正确反映了西方字母文字的演变？',
+                    options: [
+                        { label: 'A. 埃及象形文字 → 腓尼基字母 → 希腊字母 → 拉丁字母 → 现代字母', isCorrect: true, explanation: '正确！这正是字母传播的主要路径。' },
+                        { label: 'B. 苏美尔楔形文字 → 埃及象形文字 → 希腊字母 → 罗马字母', isCorrect: false, explanation: '不对。' },
+                        { label: 'C. 中国甲骨文 → 腓尼基字母 → 拉丁字母', isCorrect: false, explanation: '不对。' },
+                        { label: 'D. 印度梵文 → 阿拉伯字母 → 欧洲字母', isCorrect: false, explanation: '不对。' }
+                    ]
+                },
+                timeline_explain1: { speaker: '⏳ 时间之神', text: '', next: 'timeline_q2' },
+                timeline_q2: {
+                    speaker: '🔗 文明连接 第二问',
+                    text: '以下哪种顺序正确反映了民主制度的演变？',
+                    options: [
+                        { label: 'A. 希腊直接民主 → 罗马共和 → 英国议会 → 美国代议制民主', isCorrect: true, explanation: '正确！' },
+                        { label: 'B. 罗马帝国 → 中世纪封建制度 → 君主专制', isCorrect: false, explanation: '不对。' },
+                        { label: 'C. 雅典民主 → 斯巴达寡头 → 罗马元老院', isCorrect: false, explanation: '不对。' },
+                        { label: 'D. 法国大革命 → 英国光荣革命 → 美国独立', isCorrect: false, explanation: '不对。' }
+                    ]
+                },
+                timeline_explain2: { speaker: '⏳ 时间之神', text: '', next: 'timeline_q3' },
+                timeline_q3: {
+                    speaker: '🔗 文明连接 第三问',
+                    text: '以下哪种顺序正确反映了科学方法的演进？',
+                    options: [
+                        { label: 'A. 希腊自然哲学 → 伊斯兰科学 → 欧洲经院哲学 → 文艺复兴实验科学 → 现代科学', isCorrect: true, explanation: '正确！' },
+                        { label: 'B. 占星术 → 炼金术 → 化学 → 物理学', isCorrect: false, explanation: '不对。' },
+                        { label: 'C. 亚里士多德逻辑 → 培根归纳法 → 笛卡尔演绎法', isCorrect: false, explanation: '不对。' },
+                        { label: 'D. 古代神话 → 宗教教义 → 科学革命', isCorrect: false, explanation: '不对。' }
+                    ]
+                },
+                timeline_explain3: { speaker: '⏳ 时间之神', text: '', next: 'timeline_q4' },
+                timeline_q4: {
+                    speaker: '🔗 文明连接 第四问',
+                    text: '以下哪种顺序正确反映了罗马法对后世的影响？',
+                    options: [
+                        { label: 'A. 十二铜表法 → 查士丁尼法典 → 拿破仑法典 → 大陆法系', isCorrect: true, explanation: '正确！' },
+                        { label: 'B. 汉谟拉比法典 → 摩西律法 → 古兰经', isCorrect: false, explanation: '不对。' },
+                        { label: 'C. 英国普通法 → 罗马法 → 教会法', isCorrect: false, explanation: '不对。' },
+                        { label: 'D. 罗马法 → 日耳曼习惯法 → 封建法', isCorrect: false, explanation: '不对。' }
+                    ]
+                },
+                timeline_explain4: { speaker: '⏳ 时间之神', text: '', next: 'timeline_success' },
+                timeline_success: {
+                    speaker: '⏳ 时间之神',
+                    text: '很好！你已经看到了历史的连续性。每个伟大的文明都站在前人的肩膀上，又为后来者提供基础。（获得知识碎片+4）',
+                    onEnter: () => { state.knowledgePoints += 4; },
+                    next: 'temple_start'
+                },
+                temple_start: {
+                    speaker: '⏳ 时间之神',
+                    text: '时间长廊通向一座宏伟的建筑，融合了所有时代的建筑风格——埃及石柱、希腊拱门、罗马圆顶、哥特尖塔、文艺复兴对称性。内部是一个巨大的圆形厅堂，中央是一个发光的球体。\n\n“这是知识神殿，汇集了人类文明的智慧结晶。中央的时间核心需要历史知识的激活。准备接受挑战吗？”',
+                    next: 'modern_quiz_q1'
+                },
+                modern_quiz_q1: {
+                    speaker: '📜 第一问 · 埃及',
+                    text: '古埃及金字塔的主要功能是什么？',
+                    options: [
+                        { label: 'A. 法老的陵墓', isCorrect: true, explanation: '正确！金字塔是法老的陵墓，存放木乃伊和陪葬品。' },
+                        { label: 'B. 祭祀太阳神的神庙', isCorrect: false, explanation: '不对。神庙用于祭祀，金字塔是陵墓。' },
+                        { label: 'C. 天文观测台', isCorrect: false, explanation: '虽有天文象征，但主要功能是陵墓。' },
+                        { label: 'D. 粮仓', isCorrect: false, explanation: '约瑟故事是传说，并非实际功能。' }
+                    ]
+                },
+                modern_explain1: { speaker: '⏳ 时间之神', text: '', next: 'modern_quiz_q2' },
+                modern_quiz_q2: {
+                    speaker: '📜 第二问 · 埃及',
+                    text: '古埃及的主要书写材料是什么？',
+                    options: [
+                        { label: 'A. 纸莎草纸', isCorrect: true, explanation: '正确！古埃及人用纸莎草制作书写材料。' },
+                        { label: 'B. 羊皮纸', isCorrect: false, explanation: '羊皮纸流行于古希腊罗马。' },
+                        { label: 'C. 泥板', isCorrect: false, explanation: '泥板是两河流域常用。' },
+                        { label: 'D. 竹简', isCorrect: false, explanation: '竹简是中国古代书写材料。' }
+                    ]
+                },
+                modern_explain2: { speaker: '⏳ 时间之神', text: '', next: 'modern_quiz_q3' },
+                modern_quiz_q3: {
+                    speaker: '📜 第三问 · 希腊',
+                    text: '雅典民主制与现代民主的主要区别是？',
+                    options: [
+                        { label: 'A. 雅典是直接民主，现代是代议制民主', isCorrect: false, explanation: '这是区别之一，但不全面。' },
+                        { label: 'B. 雅典只有男性公民参与，现代普选', isCorrect: false, explanation: '这也是区别，但不够完整。' },
+                        { label: 'C. 雅典没有政党，现代有政党', isCorrect: false, explanation: '同样是区别。' },
+                        { label: 'D. 以上都是', isCorrect: true, explanation: '正确！三者都是重要区别。' }
+                    ]
+                },
+                modern_explain3: { speaker: '⏳ 时间之神', text: '', next: 'modern_quiz_q4' },
+                modern_quiz_q4: {
+                    speaker: '📜 第四问 · 希腊',
+                    text: '古希腊哲学中，哪位哲学家提出了“理想国”的概念？',
+                    options: [
+                        { label: 'A. 苏格拉底', isCorrect: false, explanation: '苏格拉底述而不作。' },
+                        { label: 'B. 柏拉图', isCorrect: true, explanation: '正确！柏拉图的《理想国》探讨正义与理想政体。' },
+                        { label: 'C. 亚里士多德', isCorrect: false, explanation: '亚里士多德更多研究现实政体。' },
+                        { label: 'D. 毕达哥拉斯', isCorrect: false, explanation: '毕达哥拉斯专注数学与灵魂。' }
+                    ]
+                },
+                modern_explain4: { speaker: '⏳ 时间之神', text: '', next: 'modern_quiz_q5' },
+                modern_quiz_q5: {
+                    speaker: '📜 第五问 · 罗马',
+                    text: '罗马法对现代法律体系的主要贡献是？',
+                    options: [
+                        { label: 'A. 私法体系（如契约、所有权）', isCorrect: true, explanation: '正确！罗马法奠定了私法基础。' },
+                        { label: 'B. 陪审团制度', isCorrect: false, explanation: '陪审团源于英国普通法。' },
+                        { label: 'C. 法律面前人人平等', isCorrect: false, explanation: '此原则在罗马法中并不完全。' },
+                        { label: 'D. 成文法传统', isCorrect: false, explanation: '成文法自古就有，罗马法贡献在于体系。' }
+                    ]
+                },
+                modern_explain5: { speaker: '⏳ 时间之神', text: '', next: 'modern_quiz_q6' },
+                modern_quiz_q6: {
+                    speaker: '📜 第六问 · 罗马',
+                    text: '以下哪项是罗马人发明的建筑技术？',
+                    options: [
+                        { label: 'A. 混凝土', isCorrect: true, explanation: '正确！罗马人发明并广泛使用混凝土，如万神殿。' },
+                        { label: 'B. 拱门', isCorrect: false, explanation: '拱门在美索不达米亚和希腊已有。' },
+                        { label: 'C. 穹顶', isCorrect: false, explanation: '穹顶在亚述和希腊也有早期实例。' },
+                        { label: 'D. 以上都是', isCorrect: false, explanation: '混凝土是罗马独特创新。' }
+                    ]
+                },
+                modern_explain6: { speaker: '⏳ 时间之神', text: '', next: 'modern_quiz_q7' },
+                modern_quiz_q7: {
+                    speaker: '📜 第七问 · 中世纪',
+                    text: '中世纪大学最初是如何形成的？',
+                    options: [
+                        { label: 'A. 学者行会自发组织', isCorrect: true, explanation: '正确！如博洛尼亚大学由学生行会创立。' },
+                        { label: 'B. 国王下令建立', isCorrect: false, explanation: '部分大学后获王室特许，但起源多为自发。' },
+                        { label: 'C. 教会创办', isCorrect: false, explanation: '教会曾支持，但最初是学者行会。' },
+                        { label: 'D. 城市政府设立', isCorrect: false, explanation: '城市政府后来参与管理。' }
+                    ]
+                },
+                modern_explain7: { speaker: '⏳ 时间之神', text: '', next: 'modern_quiz_q8' },
+                modern_quiz_q8: {
+                    speaker: '📜 第八问 · 中世纪',
+                    text: '以下哪项不是中世纪哥特式建筑的特征？',
+                    options: [
+                        { label: 'A. 尖拱', isCorrect: false, explanation: '尖拱是哥特特征。' },
+                        { label: 'B. 飞扶壁', isCorrect: false, explanation: '飞扶壁是哥特创新。' },
+                        { label: 'C. 彩色玻璃窗', isCorrect: false, explanation: '彩色玻璃窗在哥特时期盛行。' },
+                        { label: 'D. 圆拱', isCorrect: true, explanation: '圆拱是罗马式建筑特征，哥特采用尖拱。' }
+                    ]
+                },
+                modern_explain8: { speaker: '⏳ 时间之神', text: '', next: 'modern_quiz_q9' },
+                modern_quiz_q9: {
+                    speaker: '📜 第九问 · 文艺复兴',
+                    text: '文艺复兴时期，哪位艺术家绘制了《蒙娜丽莎》？',
+                    options: [
+                        { label: 'A. 米开朗基罗', isCorrect: false, explanation: '米开朗基罗擅长雕塑和壁画。' },
+                        { label: 'B. 拉斐尔', isCorrect: false, explanation: '拉斐尔以圣母像著称。' },
+                        { label: 'C. 达·芬奇', isCorrect: true, explanation: '正确！达·芬奇创作了《蒙娜丽莎》。' },
+                        { label: 'D. 提香', isCorrect: false, explanation: '提香是威尼斯画派代表。' }
+                    ]
+                },
+                modern_explain9: { speaker: '⏳ 时间之神', text: '', next: 'modern_quiz_q10' },
+                modern_quiz_q10: {
+                    speaker: '📜 第十问 · 文艺复兴',
+                    text: '印刷术的发明对欧洲的主要影响是？',
+                    options: [
+                        { label: 'A. 加速知识传播，促进宗教改革', isCorrect: true, explanation: '正确！印刷术使书籍普及，新思想迅速传播。' },
+                        { label: 'B. 增加书籍成本', isCorrect: false, explanation: '印刷术降低了成本。' },
+                        { label: 'C. 导致手抄本消失', isCorrect: false, explanation: '手抄本逐渐减少，但不是主要影响。' },
+                        { label: 'D. 提高识字率', isCorrect: false, explanation: '这是结果之一，但根本影响是知识传播。' }
+                    ]
+                },
+                modern_explain10: { speaker: '⏳ 时间之神', text: '', next: 'modern_quiz_q11' },
+                modern_quiz_q11: {
+                    speaker: '📜 第十一问 · 现代',
+                    text: '第一次工业革命的标志性发明是？',
+                    options: [
+                        { label: 'A. 蒸汽机', isCorrect: true, explanation: '正确！瓦特改良蒸汽机推动工业革命。' },
+                        { label: 'B. 电力', isCorrect: false, explanation: '电力是第二次工业革命标志。' },
+                        { label: 'C. 内燃机', isCorrect: false, explanation: '内燃机稍晚。' },
+                        { label: 'D. 计算机', isCorrect: false, explanation: '计算机是20世纪发明。' }
+                    ]
+                },
+                modern_explain11: { speaker: '⏳ 时间之神', text: '', next: 'modern_quiz_q12' },
+                modern_quiz_q12: {
+                    speaker: '📜 第十二问 · 现代',
+                    text: '联合国成立于哪一年？',
+                    options: [
+                        { label: 'A. 1919', isCorrect: false, explanation: '1919年是国际联盟成立。' },
+                        { label: 'B. 1945', isCorrect: true, explanation: '正确！联合国1945年成立。' },
+                        { label: 'C. 1950', isCorrect: false, explanation: '1950年联合国已运行。' },
+                        { label: 'D. 1939', isCorrect: false, explanation: '1939年二战爆发。' }
+                    ]
+                },
+                modern_explain12: { speaker: '⏳ 时间之神', text: '', next: 'modern_quiz_success' },
+                modern_quiz_success: {
+                    speaker: '⏳ 时间之神',
+                    text: '知识已经激活，但真正的智慧不只是记忆事实。历史的价值在于它如何帮助我们理解现在，塑造未来。（获得知识碎片+12）',
+                    onEnter: () => { state.knowledgePoints += 12; },
+                    next: 'museum_start'
+                },
+                museum_start: {
+                    speaker: '⏳ 时间之神',
+                    text: '知识神殿变形为一座现代博物馆，玻璃天顶下，各个展厅展示着不同文明的文物。参观者来来往往，其中一些面孔看起来很熟悉——有埃及祭司拉赫提、希腊哲人索福斯、罗马工程师马库斯、中世纪骑士罗兰、文艺复兴大师达·芬奇……\n\n一位优雅的老者向你走来。',
+                    next: 'curator_meet'
+                },
+                curator_meet: {
+                    speaker: '👨‍🦳 博物馆馆长',
+                    text: '“欢迎回到现代世界，时间旅行者。我们正在筹备一个特别展览，主题是‘文明的对话’。作为亲历多个时代的人，你能帮我们策划这个展览吗？”',
+                    options: [
+                        { label: '“当然，我很乐意。”', next: 'exhibition_q1' }
+                        // 已移除“我需要做些什么？”选项
+                    ]
+                },
+                // 馆长解释场景保留（但不再直接跳转，原“我需要做些什么？”选项已删）
+                curator_explain: {
+                    speaker: '👨‍🦳 博物馆馆长',
+                    text: '“你需要选择一组文物，并按照历史脉络安排顺序，撰写说明。让我们从第一个主题开始。”',
+                    next: 'exhibition_q1'
+                },
+                exhibition_q1: {
+                    speaker: '🏛️ 第一展题 · 权力与治理',
+                    text: '你会选择以下哪组文物来展示民主的演变？',
+                    options: [
+                        { label: 'A. 雅典公民投票陶片、罗马元老院浮雕、英国大宪章、美国宪法', isCorrect: true, explanation: '正确！这组文物体现了民主制度的关键节点。' },
+                        { label: 'B. 埃及法老权杖、中国青铜鼎、法国国王王冠', isCorrect: false, explanation: '这些象征君主制，而非民主。' },
+                        { label: 'C. 汉谟拉比法典石碑、查士丁尼法典抄本、拿破仑法典', isCorrect: false, explanation: '这组侧重于法律，但缺少民主制度演变。' },
+                        { label: 'D. 以上都是', isCorrect: false, explanation: 'B和C不符合主题。' }
+                    ]
+                },
+                exhibition_explain1: { speaker: '👨‍🦳 馆长', text: '', next: 'exhibition_q2' },
+                exhibition_q2: {
+                    speaker: '🏛️ 第二展题 · 科学与技术',
+                    text: '你希望展示科学方法的演进。以下哪个顺序最合适？',
+                    options: [
+                        { label: 'A. 亚里士多德著作、阿维森纳医典、罗吉尔·培根手稿、牛顿原理', isCorrect: true, explanation: '正确！体现了从希腊哲学到伊斯兰科学再到欧洲科学的发展。' },
+                        { label: 'B. 占星术图表、炼金术配方、化学实验仪器', isCorrect: false, explanation: '这只是技术史片段，缺少希腊理性源头。' },
+                        { label: 'C. 达·芬奇设计图、伽利略望远镜、瓦特蒸汽机', isCorrect: false, explanation: '这组时代较晚，缺古代基础。' },
+                        { label: 'D. 以上都是', isCorrect: false, explanation: 'B和C不完整。' }
+                    ]
+                },
+                exhibition_explain2: { speaker: '👨‍🦳 馆长', text: '', next: 'exhibition_q3' },
+                exhibition_q3: {
+                    speaker: '🏛️ 第三展题 · 艺术与表达',
+                    text: '你需要安排展品的年代顺序。以下哪个顺序正确？',
+                    options: [
+                        { label: 'A. 埃及壁画、希腊瓶画、罗马雕塑、中世纪手抄本、文艺复兴油画', isCorrect: true, explanation: '正确！按时间顺序展现了艺术演变。' },
+                        { label: 'B. 希腊雕塑、埃及壁画、罗马雕塑、文艺复兴油画', isCorrect: false, explanation: '埃及早于希腊，顺序错误。' },
+                        { label: 'C. 中世纪手抄本、埃及壁画、希腊瓶画、文艺复兴油画', isCorrect: false, explanation: '中世纪晚于古代，顺序混乱。' },
+                        { label: 'D. 以上都不对', isCorrect: false, explanation: 'A是正确的。' }
+                    ]
+                },
+                exhibition_explain3: { speaker: '👨‍🦳 馆长', text: '', next: 'exhibition_success' },
+                exhibition_success: {
+                    speaker: '👨‍🦳 博物馆馆长',
+                    text: '精彩的策划！你不仅展示了历史，还揭示了其中的联系与意义。这正是历史研究的真谛——不只是了解过去发生了什么，而是理解为什么，以及它如何塑造了我们。（获得知识碎片+3）',
+                    onEnter: () => { state.knowledgePoints += 3; },
+                    next: 'library_return_part1'
+                },
+                library_return_part1: {
+                    speaker: '⏳ 时间之神',
+                    text: '博物馆的景象逐渐模糊，时间之神的光芒最后一次包围你。当光芒散去，你发现自己站在学校图书馆的那个神秘房间里，时间装置静静地矗立在那里，但不再发光。窗外，夕阳西下，仿佛你只离开了几分钟。',
+                    next: 'library_return_part2'
+                },
+                library_return_part2: {
+                    speaker: '⏳ 时间之神',
+                    text: '“时间回环已经完成，旅者。你已经完成了所有任务，时间图谱已经修复。从现在起，这些历史记忆将成为你的一部分，指引你在自己的时代中前行。”',
+                    options: [
+                        { label: '“这一切是真实发生的吗？”', next: 'chronos_answer1' },
+                        { label: '“我学到了什么？”', next: 'chronos_answer2' },
+                        { label: '“我还能再次旅行吗？”', next: 'chronos_answer3' }
+                    ]
+                },
+                chronos_answer1: {
+                    speaker: '⏳ 时间之神',
+                    text: '“现实与记忆的界限并不总是清晰。重要的是经历本身。”',
+                    next: 'chronos_farewell'
+                },
+                chronos_answer2: {
+                    speaker: '⏳ 时间之神',
+                    text: '“你学到的不只是历史事实，还有文明的连续性，人类智慧的积累，以及过去如何塑造现在。”',
+                    next: 'chronos_farewell'
+                },
+                chronos_answer3: {
+                    speaker: '⏳ 时间之神',
+                    text: '“物理形式的旅行已经结束，但心灵的旅程永不停止。书籍、艺术、思考——这些都是时间旅行的形式。”',
+                    next: 'chronos_farewell'
+                },
+                chronos_farewell: {
+                    speaker: '⏳ 时间之神',
+                    text: '“再见，时间旅行者。无论你走到哪里，历史都与你同在。记住，你不只是历史的观察者，也是创造者。现在，去创造属于你的历史吧。”',
+                    next: 'ending_part1'
+                },
+                ending_part1: {
+                    speaker: '📖 叙述者',
+                    text: '当时间之神的声音消失，房间恢复了普通的样子。你走向门口，回头最后看了一眼那台时间装置——它看起来只是一件普通的古董，覆盖着灰尘。\n\n走出图书馆，校园里的一切看起来都不一样了——你注意到教学楼的设计融合了希腊柱式，操场边的雕塑姿态让你想起维特鲁威人，甚至连学校的校徽都隐约有埃及符号的影子。',
+                    next: 'ending_part2'
+                },
+                ending_part2: {
+                    speaker: '📖 叙述者',
+                    text: '', // 动态生成
+                    options: []
+                },
+                game_complete: {
+                    speaker: '',
+                    text: '',
+                    options: []
+                }
+            };
+
+            // DOM 元素
+            const speakerEl = document.getElementById('speakerName');
+            const dialogueEl = document.getElementById('dialogueText');
+            const interactionEl = document.getElementById('interactionArea');
+            const knowledgeSpan = document.getElementById('knowledgeDisplay');
+            const knowledgeBar = document.getElementById('knowledgeBar');
+            const chapterDisplay = document.getElementById('chapterDisplay');
+            const footerLeft = document.getElementById('footerLeft');
+            const dialoguePanel = document.getElementById('dialoguePanel');
+
+            function shouldShowKnowledge(sceneKey) {
+                const showScenes = [
+                    'hieroglyph_success', 'shopping_success', 'quiz_success', 'gods_success', 'ending_summary',
+                    'debate_interlude', 'olympic_interlude', 'aqueduct_success', 'senate_success', 'chapter2_ending',
+                    'investigation_success', 'monastery_success', 'cathedral_success', 'university_success',
+                    'tournament_success', 'chapter3_ending', 'vitruvian_success', 'library_success', 'monalisa_success',
+                    'optics_success', 'navigation_success', 'chapter4_ending',
+                    'timeline_success', 'modern_quiz_success', 'exhibition_success', 'chapter5_ending'
+                ];
+                return showScenes.includes(sceneKey);
+            }
+
+            function stopTyping() {
+                if (state.typingInterval) {
+                    clearInterval(state.typingInterval);
+                    state.typingInterval = null;
+                }
+                state.typing = false;
+            }
+
+            function typeText(fullText, callback) {
+                stopTyping();
+                state.typing = true;
+                let index = 0;
+                dialogueEl.textContent = '';
+
+                if (state.skipTyping) {
+                    dialogueEl.textContent = fullText;
+                    state.typing = false;
+                    state.skipTyping = false;
+                    if (callback) callback();
+                    return;
+                }
+
+                if (fullText.length < 10) {
+                    dialogueEl.textContent = fullText;
+                    state.typing = false;
+                    if (callback) callback();
+                    return;
+                }
+
+                state.typingInterval = setInterval(() => {
+                    if (index < fullText.length) {
+                        dialogueEl.textContent += fullText[index];
+                        index++;
+                    } else {
+                        stopTyping();
+                        if (callback) callback();
+                    }
+                }, 30);
+            }
+
+            function updateChapter(sceneKey) {
+                const libraryScenes = [
+                    'library_discovery', 'library_enter', 'library_books', 'library_machine', 'chronos_intro_egypt'
+                ];
+                const egyptScenes = [
+                    'egypt_arrival', 'chronos_dialogue_egypt', 'chronos_response1', 'chronos_response2', 'chronos_response3',
+                    'chronos_q2_1', 'chronos_q2_2', 'chronos_q2_3', 'chronos_q3_1', 'chronos_q3_2', 'chronos_q3_3', 'chronos_explain',
+                    'desert_path', 'village_scene', 'village_more', 'meet_rahti', 'rahti_response1', 'rahti_response2', 'rahti_response3',
+                    'temple_door', 'hieroglyph_start', 'hieroglyph_q1', 'hieroglyph_q2', 'hieroglyph_q3', 'hieroglyph_q4', 'hieroglyph_q5',
+                    'hieroglyph_explain1', 'hieroglyph_explain2', 'hieroglyph_explain3', 'hieroglyph_explain4', 'hieroglyph_explain5',
+                    'hieroglyph_success', 'temple_inside', 'temple_mural', 'clue_found', 'market_scene', 'market_meet', 'shopping_game',
+                    'shopping_success', 'shopping_fail', 'prison_release', 'pyramid_entrance', 'quiz_q1', 'quiz_q2', 'quiz_q3',
+                    'quiz_explain1', 'quiz_explain2', 'quiz_explain3', 'quiz_success', 'pyramid_interior', 'gods_q1', 'gods_q2', 'gods_q3',
+                    'gods_explain1', 'gods_explain2', 'gods_explain3', 'gods_success', 'ending_summary'
+                ];
+
+                if (sceneKey === 'start_page' || sceneKey === 'chapter_select') {
+                    chapterDisplay.textContent = '';
+                } else if (libraryScenes.includes(sceneKey)) {
+                    chapterDisplay.textContent = '现代图书馆';
+                } else if (egyptScenes.includes(sceneKey)) {
+                    chapterDisplay.textContent = '黄金之国 · 古埃及';
+                } else if (
+                    sceneKey.startsWith('chapter2') || sceneKey.includes('acropolis') || sceneKey.includes('sophus') ||
+                    sceneKey.includes('debate') || sceneKey.includes('olympic') || sceneKey.includes('marcus') ||
+                    sceneKey.includes('aqueduct') || sceneKey.includes('senate') || sceneKey.includes('rome') ||
+                    sceneKey === 'chapter2_ending' || sceneKey === 'debate_interlude' || sceneKey === 'olympic_interlude' ||
+                    sceneKey === 'assembly_encourage' || sceneKey === 'olympia_location' || sceneKey === 'olympia_rules' ||
+                    sceneKey === 'marcus_explain' || sceneKey === 'marcus_speed' || sceneKey === 'marcus_advice'
+                ) {
+                    chapterDisplay.textContent = '荣耀与理性 · 古希腊与罗马';
+                } else if (
+                    sceneKey.startsWith('chapter3') || sceneKey.includes('roland') || sceneKey.includes('village_') ||
+                    sceneKey.includes('monastery') || sceneKey.includes('cathedral') || sceneKey.includes('university') ||
+                    sceneKey.includes('tournament') || sceneKey === 'investigation_success' || sceneKey === 'monastery_success' ||
+                    sceneKey === 'cathedral_success' || sceneKey === 'university_success' || sceneKey === 'tournament_success' ||
+                    sceneKey === 'chapter3_ending' || sceneKey === 'abbot_meet' || sceneKey === 'master_mason' ||
+                    sceneKey === 'thomas_meet' || sceneKey === 'count_speech' || sceneKey === 'roland_farewell'
+                ) {
+                    chapterDisplay.textContent = '信仰与荣耀 · 中世纪欧洲';
+                } else if (
+                    sceneKey.startsWith('chapter4') || sceneKey.includes('leonardo') || sceneKey.includes('vitruvian') ||
+                    sceneKey.includes('library_') || sceneKey.includes('monalisa') || sceneKey.includes('optics') ||
+                    sceneKey.includes('navigation') || sceneKey.includes('medici') || sceneKey.includes('venice') ||
+                    sceneKey.includes('sistine') || sceneKey === 'vitruvian_success' || sceneKey === 'library_success' ||
+                    sceneKey === 'monalisa_success' || sceneKey === 'optics_success' || sceneKey === 'navigation_success' ||
+                    sceneKey === 'chapter4_ending' || sceneKey === 'amerigo_meet' || sceneKey === 'leonardo_intro'
+                ) {
+                    chapterDisplay.textContent = '艺术与科学的觉醒 · 文艺复兴';
+                } else if (
+                    sceneKey.startsWith('chapter5') || sceneKey.includes('timeline') || sceneKey.includes('temple') ||
+                    sceneKey.includes('modern_quiz') || sceneKey.includes('museum') || sceneKey.includes('exhibition') ||
+                    sceneKey.includes('curator') || sceneKey.includes('library_return') || sceneKey.includes('chronos_final') ||
+                    sceneKey.includes('chronos_answer') || sceneKey.includes('chronos_farewell') || sceneKey.includes('ending_part')
+                ) {
+                    chapterDisplay.textContent = '回到未来 · 现代世界';
+                } else {
+                    chapterDisplay.textContent = '时间旅行';
+                }
+            }
+
+            function onEnterScene(sceneKey) {
+                const scene = scenes[sceneKey];
+                if (scene && scene.onEnter) scene.onEnter();
+                knowledgeSpan.textContent = state.knowledgePoints;
+            }
+
+            function renderScene() {
+                const sceneKey = state.currentSceneKey;
+                let scene = scenes[sceneKey];
+                if (!scene) {
+                    console.error('场景不存在:', sceneKey);
+                    return;
+                }
+
+                knowledgeBar.style.display = shouldShowKnowledge(sceneKey) ? 'inline-block' : 'none';
+
+                // 动态生成解析场景文本
+                if (sceneKey.includes('_explain') && state.lastExplanation) {
+                    scene = { ...scene, text: state.lastExplanation || '解析加载中...' };
+                }
+
+                // 动态生成结尾文本
+                if (sceneKey === 'ending_summary') {
+                    scene = { ...scene, text: `你揭示了阴谋，阻止了历史扭曲。这一文明节点记录完成。法老赠你黄金护符，拉赫提和纳芙蒂向你致谢。\n\n你收集到的知识碎片总数：${state.knowledgePoints}。` };
+                }
+                if (sceneKey === 'chapter2_ending') {
+                    scene = { ...scene, text: `“第二文明节点记录完成。你已经见证了民主的诞生、哲学的争鸣、体育的荣耀、工程的壮举与法律的力量。这些都是西方文明的基石，影响延续至今。准备好前往下一个时间节点了吗？”\n\n你收集到的知识碎片总数：${state.knowledgePoints}。` };
+                }
+                if (sceneKey === 'chapter3_ending') {
+                    scene = { ...scene, text: `“第三文明节点记录完成。你已经体验了中世纪的核心——信仰与荣誉的交织，等级与责任的平衡。这个时代看似黑暗，却孕育了大学、哥特建筑、骑士精神等重要文化遗产。准备好前往下一个时间节点了吗？”\n\n你收集到的知识碎片总数：${state.knowledgePoints}。` };
+                }
+                if (sceneKey === 'chapter4_ending') {
+                    scene = { ...scene, text: `“第四文明节点记录完成。你已经体验了文艺复兴的核心——人文主义思想、艺术革命、科学方法的兴起、探索精神。这个时代开启了现代世界的大门，其影响一直延续至今。准备好返回你的时代了吗？最后一站，将是你自己的时代......”\n\n你收集到的知识碎片总数：${state.knowledgePoints}。` };
+                }
+                if (sceneKey === 'ending_part2') {
+                    scene = { ...scene, text: `第二天的历史课上，老师宣布了一个期末项目：“请选择一个历史时期，探讨它对现代世界的影响。”\n\n当其他同学发出抱怨时，你微微一笑，已经在笔记本上写下了标题：“时间旅行者的笔记：文明的对话”\n\n【游戏终章】\n\n你收集到的知识碎片总数：${state.knowledgePoints}。\n\n【成就解锁】时间旅行者 · 历史织者 · 智慧守护者 · 文明使者` };
+                }
+
+                // 控制左上角椭圆框和左下角沙漏的显示/隐藏
+                if (sceneKey === 'start_page' || sceneKey === 'chapter_select' || sceneKey === 'game_complete') {
+                    speakerEl.style.display = 'none';
+                    footerLeft.style.display = 'none';
+                    dialoguePanel.classList.add('start-page-panel');
+                } else {
+                    speakerEl.style.display = '';
+                    footerLeft.style.display = '';
+                    dialoguePanel.classList.remove('start-page-panel');
+                }
+
+                updateChapter(sceneKey);
+                state.currentSpeaker = scene.speaker;
+                state.currentFullText = scene.text;
+                speakerEl.textContent = scene.speaker;
+
+                interactionEl.innerHTML = '';
+
+                // ========== 开始页面特殊处理（确保显示标题和按钮） ==========
+                if (sceneKey === 'start_page') {
+                    dialogueEl.innerHTML = '<img src="素材/kaishi.png" class="start-page-image" alt="开始页面图片">';
+                    const titleDiv = document.createElement('div');
+                    titleDiv.className = 'start-title';
+                    titleDiv.textContent = '时间旅行者';
+                    interactionEl.appendChild(titleDiv);
+                    
+                    const startBtn = document.createElement('button');
+                    startBtn.className = 'start-btn';
+                    startBtn.textContent = '开始旅程';
+                    startBtn.addEventListener('click', () => {
+                        goToScene('library_discovery');
+                    });
+                    interactionEl.appendChild(startBtn);
+
+                    const selectChapterBtn = document.createElement('button');
+                    selectChapterBtn.className = 'start-btn';
+                    selectChapterBtn.style.marginTop = '10px';
+                    selectChapterBtn.style.fontSize = '1.5rem';
+                    selectChapterBtn.textContent = '选择章节';
+                    selectChapterBtn.addEventListener('click', () => {
+                        goToScene('chapter_select');
+                    });
+                    interactionEl.appendChild(selectChapterBtn);
+
+                    knowledgeSpan.textContent = state.knowledgePoints;
+                    return;
+                }
+
+                // ========== 章节选择页面特殊处理（直接构建按钮） ==========
+                if (sceneKey === 'chapter_select') {
+                    dialogueEl.innerHTML = '<img src="素材/xuanze.png" class="chapter-select-image" alt="章节选择图片">';
+                    
+                    const chapters = [
+                        { name: '黄金之国 · 古埃及', target: 'egypt_arrival' },
+                        { name: '荣耀与理性 · 古希腊与罗马', target: 'chapter2_opening' },
+                        { name: '信仰与荣耀 · 中世纪欧洲', target: 'chapter3_opening' },
+                        { name: '艺术与科学的觉醒 · 文艺复兴', target: 'chapter4_opening' },
+                        { name: '回到未来 · 现代世界', target: 'chapter5_opening' }
+                    ];
+
+                    chapters.forEach(ch => {
+                        const btn = document.createElement('button');
+                        btn.className = 'chapter-btn';
+                        btn.textContent = ch.name;
+                        btn.addEventListener('click', () => {
+                            resetProgress();
+                            goToScene(ch.target);
+                        });
+                        interactionEl.appendChild(btn);
+                    });
+
+                    const backBtn = document.createElement('button');
+                    backBtn.className = 'back-btn';
+                    backBtn.textContent = '返回';
+                    backBtn.addEventListener('click', () => {
+                        goToScene('start_page');
+                    });
+                    interactionEl.appendChild(backBtn);
+
+                    knowledgeSpan.textContent = state.knowledgePoints;
+                    return;
+                }
+
+                // 游戏完结页面特殊处理
+                if (sceneKey === 'game_complete') {
+                    dialogueEl.innerHTML = '<img src="素材/jieshu.png" class="start-page-image" alt="游戏完结图片">';
+                    // 直接构建标题和按钮
+                    const titleDiv = document.createElement('div');
+                    titleDiv.className = 'start-title';
+                    titleDiv.textContent = '游戏完结';
+                    interactionEl.appendChild(titleDiv);
+                    
+                    const restartBtn = document.createElement('button');
+                    restartBtn.className = 'start-btn';
+                    restartBtn.textContent = '重新开始';
+                    restartBtn.addEventListener('click', () => {
+                        resetGame();
+                    });
+                    interactionEl.appendChild(restartBtn);
+
+                    knowledgeSpan.textContent = state.knowledgePoints;
+                    return;
+                }
+
+                typeText(scene.text, () => {
+                    generateInteraction(scene);
+                });
+
+                knowledgeSpan.textContent = state.knowledgePoints;
+            }
+
+            // 购物游戏渲染函数
+            function renderShoppingGame() {
+                const items = ['刻刀', '火油', '麻绳', '护符'];
+                const prices = {
+                    刻刀: { 摊位A: 3, 摊位B: 4, 摊位C: 2 },
+                    火油: { 摊位A: 4, 摊位B: 3, 摊位C: 5 },
+                    麻绳: { 摊位A: 2, 摊位B: 3, 摊位C: 4 },
+                    护符: { 摊位A: 5, 摊位B: 4, 摊位C: 3 }
+                };
+
+                const form = document.createElement('div');
+                form.innerHTML = '<h3 style="color:#ffe3b0;">选择每件物品的购买摊位：</h3>';
+
+                items.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'shop-item';
+                    div.innerHTML = `<div>${item}</div>`;
+                    const priceDiv = document.createElement('div');
+                    priceDiv.className = 'price-options';
+                    ['摊位A', '摊位B', '摊位C'].forEach(stall => {
+                        const label = document.createElement('label');
+                        label.innerHTML = `<input type="radio" name="${item}" value="${stall}" data-price="${prices[item][stall]}"> ${stall} (${prices[item][stall]}铜币)`;
+                        priceDiv.appendChild(label);
+                    });
+                    div.appendChild(priceDiv);
+                    form.appendChild(div);
+                });
+
+                const submit = document.createElement('button');
+                submit.className = 'submit-shop';
+                submit.textContent = '结算 (总价≤10铜币)';
+                submit.addEventListener('click', () => {
+                    let total = 0;
+                    let allSelected = true;
+                    items.forEach(item => {
+                        const selected = document.querySelector(`input[name="${item}"]:checked`);
+                        if (selected) {
+                            total += parseInt(selected.dataset.price);
+                        } else {
+                            allSelected = false;
+                        }
+                    });
+
+                    if (!allSelected) {
+                        alert('请为所有物品选择摊位！');
+                        return;
+                    }
+
+                    if (total <= 10) {
+                        goToScene('shopping_success');
+                    } else {
+                        goToScene('shopping_fail');
+                    }
+                });
+                form.appendChild(submit);
+
+                interactionEl.appendChild(form);
+            }
+
+            function generateInteraction(scene) {
+                const currentKey = state.currentSceneKey;
+
+                // ===== 为各个场景添加图片（位于文字下方） =====
+               // 第一章图片
+                if (currentKey === 'library_discovery') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/tushuguan.png';
+                    img.alt = '图书馆门扉';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'library_enter') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/fangjian.png';
+                    img.alt = '图书馆内部';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'chronos_intro_egypt') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/shikong.png';
+                    img.alt = '时空穿梭';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'egypt_arrival') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/shamo.png';
+                    img.alt = '古埃及沙漠';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'chronos_dialogue_egypt') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/shijian.png';
+                    img.alt = '时间之神';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'desert_path') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/niluohe.png';
+                    img.alt = '尼罗河岸';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'temple_door') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/damen.png';
+                    img.alt = '神庙密室门';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'temple_inside') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/neibu.png';
+                    img.alt = '密室内';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'temple_mural') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/bihua.png';
+                    img.alt = '壁画';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'market_scene') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/jishi.png';
+                    img.alt = '市集';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'pyramid_entrance') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/rukou.png';
+                    img.alt = '金字塔入口';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'pyramid_interior') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/jinneibu.png';
+                    img.alt = '金字塔内部';
+                    dialogueEl.appendChild(img);
+                }
+
+                 // 第二章图片
+                if (currentKey === 'chapter2_opening') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/weicheng.png';
+                    img.alt = '雅典卫城';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'acropolis_meet') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/jiaoxia.png';
+                    img.alt = '卫城脚下';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'assembly') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/jihui.png';
+                    img.alt = '公民集会';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'olympia_scene') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/jingji.png';
+                    img.alt = '奥林匹亚';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'time_jump_rome') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/luoma.png';
+                    img.alt = '罗马广场';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'senate_scene') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/yuanlao.png';
+                    img.alt = '元老院';
+                    dialogueEl.appendChild(img);
+                }
+
+               // 第三章图片
+                if (currentKey === 'chapter3_opening') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/zhongshiji.png';
+                    img.alt = '中世纪田野';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'meet_knight') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/tianye.png';
+                    img.alt = '骑士相遇';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'village_investigation') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/cunzhuang.png';
+                    img.alt = '中世纪村庄';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'monastery_arrival') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/xiudao.png';
+                    img.alt = '修道院';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'notre_dame_arrival') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/bali.png';
+                    img.alt = '巴黎圣母院';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'university_arrival') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/daxue.png';
+                    img.alt = '中世纪大学';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'castle_tournament') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/chengbao.png';
+                    img.alt = '城堡比武';
+                    dialogueEl.appendChild(img);
+                }
+
+                 // 第四章图片
+                if (currentKey === 'chapter4_opening') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/foluo.png';
+                    img.alt = '佛罗伦萨';
+                    dialogueEl.appendChild(img);
+                }
+                // 已移除 leonardo_meet 的图片
+                if (currentKey === 'medici_library') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/dafenqi.png';
+                    img.alt = '美第奇图书馆';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'workshop_arrival') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/mengna.png';
+                    img.alt = '艺术工作坊';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'laboratory_arrival') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/yishu.png';
+                    img.alt = '达·芬奇实验室';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'venice_arrival') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/gangkou.png';
+                    img.alt = '威尼斯港口';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'sistine_chapel') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/jiaotang.png';
+                    img.alt = '西斯廷教堂';
+                    dialogueEl.appendChild(img);
+                }
+
+                // 第五章图片
+                if (currentKey === 'chapter5_opening') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/suidao.png';
+                    img.alt = '时空隧道与全息投影';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'timeline_start') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/changlang.png';
+                    img.alt = '时间长廊';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'temple_start') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/shendian.png';
+                    img.alt = '知识神殿';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'museum_start') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/bowuguan.png';
+                    img.alt = '现代博物馆';
+                    dialogueEl.appendChild(img);
+                }
+                if (currentKey === 'library_return_part1') {
+                    const img = document.createElement('img');
+                    img.className = 'scene-image';
+                    img.src = '素材/huigui.png';
+                    img.alt = '图书馆回归';
+                    dialogueEl.appendChild(img);
+                }
+                // 已移除 ending_part1 的图片
+
+                // 特殊场景：library_discovery 需要“继续”按钮
+                if (currentKey === 'library_discovery') {
+                    const nextBtn = document.createElement('button');
+                    nextBtn.className = 'next-btn';
+                    nextBtn.textContent = '➡️ 继续...';
+                    nextBtn.addEventListener('click', () => {
+                        goToScene('library_enter');
+                    });
+                    interactionEl.appendChild(nextBtn);
+                    return;
+                }
+
+                // 特殊场景：shopping_fail 需要“返回”按钮
+                if (currentKey === 'shopping_fail') {
+                    const returnBtn = document.createElement('button');
+                    returnBtn.className = 'next-btn';
+                    returnBtn.textContent = '返回';
+                    returnBtn.addEventListener('click', () => {
+                        state.skipTyping = true;
+                        goToScene('shopping_game');
+                    });
+                    interactionEl.appendChild(returnBtn);
+                    return;
+                }
+
+                // 特殊场景：ending_summary 添加“继续穿越”和“返回开始”
+                if (currentKey === 'ending_summary') {
+                    const buttonRow = document.createElement('div');
+                    buttonRow.style.display = 'flex';
+                    buttonRow.style.gap = '20px';
+                    buttonRow.style.justifyContent = 'center';
+                    buttonRow.style.marginTop = '15px';
+
+                    const continueBtn = document.createElement('button');
+                    continueBtn.className = 'next-btn';
+                    continueBtn.textContent = '继续穿越';
+                    continueBtn.addEventListener('click', () => {
+                        resetProgress();
+                        goToScene('chapter2_opening');
+                    });
+                    buttonRow.appendChild(continueBtn);
+
+                    const returnBtn = document.createElement('button');
+                    returnBtn.className = 'next-btn';
+                    returnBtn.textContent = '返回开始';
+                    returnBtn.addEventListener('click', () => {
+                        resetGame();
+                    });
+                    buttonRow.appendChild(returnBtn);
+
+                    interactionEl.appendChild(buttonRow);
+                    return;
+                }
+
+                // 特殊场景：chapter2_ending 添加“继续穿越”和“返回开始”
+                if (currentKey === 'chapter2_ending') {
+                    const buttonRow = document.createElement('div');
+                    buttonRow.style.display = 'flex';
+                    buttonRow.style.gap = '20px';
+                    buttonRow.style.justifyContent = 'center';
+                    buttonRow.style.marginTop = '15px';
+
+                    const continueBtn = document.createElement('button');
+                    continueBtn.className = 'next-btn';
+                    continueBtn.textContent = '继续穿越';
+                    continueBtn.addEventListener('click', () => {
+                        resetProgress();
+                        goToScene('chapter3_opening');
+                    });
+                    buttonRow.appendChild(continueBtn);
+
+                    const returnBtn = document.createElement('button');
+                    returnBtn.className = 'next-btn';
+                    returnBtn.textContent = '返回开始';
+                    returnBtn.addEventListener('click', () => {
+                        resetGame();
+                    });
+                    buttonRow.appendChild(returnBtn);
+
+                    interactionEl.appendChild(buttonRow);
+                    return;
+                }
+
+                // 特殊场景：chapter3_ending 添加“继续穿越”和“返回开始”
+                if (currentKey === 'chapter3_ending') {
+                    const buttonRow = document.createElement('div');
+                    buttonRow.style.display = 'flex';
+                    buttonRow.style.gap = '20px';
+                    buttonRow.style.justifyContent = 'center';
+                    buttonRow.style.marginTop = '15px';
+
+                    const continueBtn = document.createElement('button');
+                    continueBtn.className = 'next-btn';
+                    continueBtn.textContent = '继续穿越';
+                    continueBtn.addEventListener('click', () => {
+                        resetProgress();
+                        goToScene('chapter4_opening');
+                    });
+                    buttonRow.appendChild(continueBtn);
+
+                    const returnBtn = document.createElement('button');
+                    returnBtn.className = 'next-btn';
+                    returnBtn.textContent = '返回开始';
+                    returnBtn.addEventListener('click', () => {
+                        resetGame();
+                    });
+                    buttonRow.appendChild(returnBtn);
+
+                    interactionEl.appendChild(buttonRow);
+                    return;
+                }
+
+                // 特殊场景：chapter4_ending 添加“继续穿越”和“返回开始”
+                if (currentKey === 'chapter4_ending') {
+                    const buttonRow = document.createElement('div');
+                    buttonRow.style.display = 'flex';
+                    buttonRow.style.gap = '20px';
+                    buttonRow.style.justifyContent = 'center';
+                    buttonRow.style.marginTop = '15px';
+
+                    const continueBtn = document.createElement('button');
+                    continueBtn.className = 'next-btn';
+                    continueBtn.textContent = '继续穿越';
+                    continueBtn.addEventListener('click', () => {
+                        resetProgress();
+                        goToScene('chapter5_opening');
+                    });
+                    buttonRow.appendChild(continueBtn);
+
+                    const returnBtn = document.createElement('button');
+                    returnBtn.className = 'next-btn';
+                    returnBtn.textContent = '返回开始';
+                    returnBtn.addEventListener('click', () => {
+                        resetGame();
+                    });
+                    buttonRow.appendChild(returnBtn);
+
+                    interactionEl.appendChild(buttonRow);
+                    return;
+                }
+
+                // 处理购物游戏
+                if (currentKey === 'shopping_game') {
+                    renderShoppingGame();
+                    return;
+                }
+
+                // 处理各种问答题目
+                if (currentKey.startsWith('hieroglyph_q')) {
+                    renderQuestion(currentKey, 'hieroglyphProgress', 'hieroglyph_explain', 5);
+                }
+                else if (currentKey.startsWith('quiz_q')) {
+                    renderQuestion(currentKey, 'quizProgress', 'quiz_explain', 3);
+                }
+                else if (currentKey.startsWith('gods_q')) {
+                    renderQuestion(currentKey, 'godsProgress', 'gods_explain', 3);
+                }
+                else if (currentKey.startsWith('debate_q')) {
+                    renderQuestion(currentKey, 'debateProgress', 'debate_explain', 5);
+                }
+                else if (currentKey.startsWith('olympic_q')) {
+                    renderQuestion(currentKey, 'olympicProgress', 'olympic_explain', 3);
+                }
+                else if (currentKey === 'aqueduct_q') {
+                    renderSingleQuestion(currentKey, 'aqueduct_success');
+                }
+                else if (currentKey.startsWith('senate_q')) {
+                    renderQuestion(currentKey, 'senateProgress', 'senate_explain', 4);
+                }
+                else if (currentKey.startsWith('investigation_q')) {
+                    renderQuestion(currentKey, 'villageProgress', 'investigation_explain', 3);
+                }
+                else if (currentKey.startsWith('monastery_q')) {
+                    renderQuestion(currentKey, 'monasteryProgress', 'monastery_explain', 3);
+                }
+                else if (currentKey.startsWith('cathedral_q')) {
+                    renderQuestion(currentKey, 'cathedralProgress', 'cathedral_explain', 3);
+                }
+                else if (currentKey.startsWith('university_q')) {
+                    renderQuestion(currentKey, 'universityProgress', 'university_explain', 3);
+                }
+                else if (currentKey.startsWith('tournament_q')) {
+                    renderQuestion(currentKey, 'tournamentProgress', 'tournament_explain', 3);
+                }
+                else if (currentKey.startsWith('vitruvian_q')) {
+                    renderQuestion(currentKey, 'vitruvianProgress', 'vitruvian_explain', 3);
+                }
+                else if (currentKey.startsWith('library_q')) {
+                    renderQuestion(currentKey, 'libraryProgress', 'library_explain', 3);
+                }
+                else if (currentKey.startsWith('monalisa_q')) {
+                    renderQuestion(currentKey, 'monaLisaProgress', 'monalisa_explain', 3);
+                }
+                else if (currentKey.startsWith('optics_q')) {
+                    renderQuestion(currentKey, 'opticsProgress', 'optics_explain', 3);
+                }
+                else if (currentKey.startsWith('navigation_q')) {
+                    renderQuestion(currentKey, 'navigationProgress', 'navigation_explain', 3);
+                }
+                // 第五章题目
+                else if (currentKey.startsWith('timeline_q') && !currentKey.includes('explain')) {
+                    renderQuestion(currentKey, 'timelineProgress', 'timeline_explain', 4);
+                }
+                else if (currentKey.startsWith('modern_quiz_q') && !currentKey.includes('explain')) {
+                    renderQuestion(currentKey, 'modernQuizProgress', 'modern_explain', 12);
+                }
+                else if (currentKey.startsWith('exhibition_q') && !currentKey.includes('explain')) {
+                    renderQuestion(currentKey, 'exhibitionProgress', 'exhibition_explain', 3);
+                }
+                // 第五章结尾特殊处理
+                else if (currentKey === 'ending_part2') {
+                    const endBtn = document.createElement('button');
+                    endBtn.className = 'next-btn';
+                    endBtn.textContent = '结束';
+                    endBtn.addEventListener('click', () => {
+                        goToScene('game_complete');
+                    });
+                    interactionEl.appendChild(endBtn);
+                    return;
+                }
+                else if (scene.options) {
+                    // 普通选项按钮
+                    scene.options.forEach(opt => {
+                        const btn = document.createElement('button');
+                        btn.className = 'option-btn';
+                        btn.textContent = opt.label;
+                        btn.addEventListener('click', () => {
+                            if (state.typing) return;
+                            if (opt.skipTyping) state.skipTyping = true;
+                            if (opt.next) goToScene(opt.next);
+                        });
+                        interactionEl.appendChild(btn);
+                    });
+                }
+                else if (scene.next) {
+                    const btn = document.createElement('button');
+                    btn.className = 'next-btn';
+                    btn.textContent = '➡️ 继续...';
+                    btn.addEventListener('click', () => {
+                        if (state.typing) return;
+                        goToScene(scene.next);
+                    });
+                    interactionEl.appendChild(btn);
+                }
+            }
+
+            // 通用题目渲染函数（多题进度），支持两位数题号
+            function renderQuestion(qKey, progressKey, explainPrefix, totalQuestions) {
+                const scene = scenes[qKey];
+                const options = scene.options;
+                const match = qKey.match(/\d+$/);
+                const questionNumber = match ? parseInt(match[0]) : 0;
+                const progress = state[progressKey] || 0;
+
+                if (questionNumber !== progress + 1) {
+                    const correctKey = qKey.replace(/\d+$/, progress + 1);
+                    if (correctKey !== qKey) {
+                        goToScene(correctKey);
+                        return;
+                    }
+                }
+
+                options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.textContent = opt.label;
+                    btn.addEventListener('click', () => {
+                        if (state.typing) return;
+                        if (opt.isCorrect) {
+                            state.lastExplanation = opt.explanation;
+                            state[progressKey] = progress + 1;
+                            const explainKey = explainPrefix + (progress + 1);
+                            goToScene(explainKey);
+                        } else {
+                            state.lastError = opt.explanation;
+                            state.skipTyping = true;
+                            renderScene();
+                        }
+                    });
+                    interactionEl.appendChild(btn);
+                });
+
+                if (state.lastError) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'error-message';
+                    errorDiv.textContent = '❌ ' + state.lastError;
+                    interactionEl.appendChild(errorDiv);
+                    state.lastError = null;
+                }
+            }
+
+            // 单题渲染
+            function renderSingleQuestion(qKey, successScene) {
+                const scene = scenes[qKey];
+                const options = scene.options;
+                options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.textContent = opt.label;
+                    btn.addEventListener('click', () => {
+                        if (state.typing) return;
+                        if (opt.isCorrect) {
+                            goToScene(successScene);
+                        } else {
+                            state.lastError = opt.explanation;
+                            state.skipTyping = true;
+                            renderScene();
+                        }
+                    });
+                    interactionEl.appendChild(btn);
+                });
+
+                if (state.lastError) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'error-message';
+                    errorDiv.textContent = '❌ ' + state.lastError;
+                    interactionEl.appendChild(errorDiv);
+                    state.lastError = null;
+                }
+            }
+
+            function resetProgress() {
+                state.knowledgePoints = 0;
+                state.hieroglyphProgress = 0;
+                state.quizProgress = 0;
+                state.godsProgress = 0;
+                state.debateProgress = 0;
+                state.olympicProgress = 0;
+                state.aqueductProgress = 0;
+                state.senateProgress = 0;
+                state.villageProgress = 0;
+                state.monasteryProgress = 0;
+                state.cathedralProgress = 0;
+                state.universityProgress = 0;
+                state.tournamentProgress = 0;
+                state.vitruvianProgress = 0;
+                state.libraryProgress = 0;
+                state.monaLisaProgress = 0;
+                state.opticsProgress = 0;
+                state.navigationProgress = 0;
+                state.timelineProgress = 0;
+                state.modernQuizProgress = 0;
+                state.exhibitionProgress = 0;
+            }
+
+            function goToScene(sceneKey) {
+                if (!scenes[sceneKey]) return;
+                stopTyping();
+                onEnterScene(sceneKey);
+                state.currentSceneKey = sceneKey;
+                renderScene();
+            }
+
+            function resetGame() {
+                stopTyping();
+                state = {
+                    currentSceneKey: 'start_page',
+                    knowledgePoints: 0,
+                    hieroglyphProgress: 0,
+                    quizProgress: 0,
+                    godsProgress: 0,
+                    debateProgress: 0,
+                    olympicProgress: 0,
+                    aqueductProgress: 0,
+                    senateProgress: 0,
+                    villageProgress: 0,
+                    monasteryProgress: 0,
+                    cathedralProgress: 0,
+                    universityProgress: 0,
+                    tournamentProgress: 0,
+                    vitruvianProgress: 0,
+                    libraryProgress: 0,
+                    monaLisaProgress: 0,
+                    opticsProgress: 0,
+                    navigationProgress: 0,
+                    timelineProgress: 0,
+                    modernQuizProgress: 0,
+                    exhibitionProgress: 0,
+                    typing: false,
+                    typingInterval: null,
+                    currentFullText: '',
+                    currentSpeaker: '',
+                    lastError: null,
+                    skipTyping: false,
+                };
+                knowledgeSpan.textContent = '0';
+                renderScene();
+            }
+
+            renderScene();
+        })();
+    </script>
+</body>
+</html>
